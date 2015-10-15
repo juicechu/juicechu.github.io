@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Archives | juice 博客</title>
+  <title>Category: 转载 | juice 博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="zhuxi.me">
 <meta property="og:type" content="website">
 <meta property="og:title" content="juice 博客">
-<meta property="og:url" content="http://juicechu.zhuxi.me/archives/index.html">
+<meta property="og:url" content="http://juicechu.zhuxi.me/categories/转载/index.html">
 <meta property="og:site_name" content="juice 博客">
 <meta property="og:description" content="zhuxi.me">
 <meta name="twitter:card" content="summary">
@@ -260,232 +260,6 @@
 
 
   
-    <article id="post-2013-10-apache-rewrite-403" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/10/22/2013-10-apache-rewrite-403/" class="article-date">
-  	<time datetime="2013-10-21T16:24:00.000Z" itemprop="datePublished">2013-10-22</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/10/22/2013-10-apache-rewrite-403/">apache rewriteEngine开启后出现403</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>apache伪静态URL配置RewriteEngine on出现403错误</p>
-<p>解决方案：<br>1.在apache配置文件httpd.conf中，修改两项配置: Options FollowSymLinks、AllowOverride All。<br>2.把Options Indexes注释掉，也就是前面加个“#”，变成#Options Indexes</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2013-10-process-port-80-occupancy" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/10/21/2013-10-process-port-80-occupancy/" class="article-date">
-  	<time datetime="2013-10-21T10:50:00.000Z" itemprop="datePublished">2013-10-21</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/10/21/2013-10-process-port-80-occupancy/">80端口被PID为4的系统进程所占用</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>装apache的时候80端口被PID为4的系统进程所占用 由于工作中需要直接从MySQL后台读取数据，所以安装了PHPnow，装的过程中提示Apache安装失败，80端口被占用。 在cmd中输入netstat –ano命令，发现80端口被一个PID为4的服务所占用，打开任务管理器，发现PID为4的进程为系统进程，其描述信息为NT Kernel &amp; System，在服务里面又找不到PID为4的服务，所以没法停掉服务。 这种情况基本上就是谷歌和度娘的事了，搜出来的结果大部分不靠谱，要么说迅雷等下载软件会占用80端口，要么说IIS占用了该端口。事实上，我机器上这些服务都没启动。那么究竟是什么原因呢？还好，偶然间看到一个页面说MS SQL Server的报表服务会占用80端口（写日志的时候已经找不到链接了，恕未引用），于是打开windows服务，找到SQL Server Reporting Services (MYSQLSERVER)，把它停掉，再安装PHPnow，发现果然能顺利安装。 以后遇到类似问题，关掉SQL Server Reporting Services (MYSQLSERVER)也可以作为一种尝试了。</p>
-<p>一些查看端口占用和关闭端口的命令，已443端口为例</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">netstat -ano|findstr <span class="string">"443"</span> //搜索<span class="number">443</span>端口占用情况，并找到进程ID</span><br><span class="line">TCP <span class="number">0.0</span>.<span class="number">0.0</span>:<span class="number">443</span> <span class="number">0.0</span>.<span class="number">0.0</span>:<span class="number">0</span> LISTENING <span class="number">720</span> //找到PID为<span class="number">720</span></span><br><span class="line">UDP <span class="number">0.0</span>.<span class="number">0.0</span>:<span class="number">59443</span> *:* <span class="number">7584</span></span><br><span class="line">-----------------------------------------------</span><br><span class="line">tasklist|findstr <span class="string">"720"</span> //查找PID为<span class="number">720</span>对应的进程名</span><br><span class="line">QQDownload.exe <span class="number">720</span> Console <span class="number">1</span> <span class="number">56</span>,<span class="number">156</span> K //找到是QQ旋风占用，结束掉进程。OK</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2013-10-text-similarity-algorithm-php" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/10/03/2013-10-text-similarity-algorithm-php/" class="article-date">
-  	<time datetime="2013-10-02T17:09:00.000Z" itemprop="datePublished">2013-10-03</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/10/03/2013-10-text-similarity-algorithm-php/">用余弦定理实现文本相似度算法</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>续上一篇文章的算法，这次自己改成PHP版本，当然如果有优化的地方请指出，以便大家学习。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line">header(<span class="string">'Content-Type: text/html; charset=UTF-8'</span>);</span><br><span class="line"><span class="variable">$text1</span> = <span class="string">&lt;&lt;&lt;EOF</span><br><span class="line">Fragment A (By Rousseau)：</span><br><span class="line">À l’instant, au lieu de la personne particulière de chaque contractant, cet acte d’association produit un Corps moral et collectif, composé d’autant de membres que l’assemblée a de voix, lequel reçoit de ce même acte son unité, son moi commun, sa vie et sa volonté. Cette personne publique, qui se forme ainsi par l’union de toutes les autres, prenait autrefois le nom de Cité , et prend maintenant celui de République ou de Corps politique: lequel est appelé par ses membres État quand il est passif, Souverain quand il est actif, Puissance en le comparant à ses semblables. À l’égard des associés, ils prennent collectivement le nom de peuple, et s’appellent en particulier citoyens, comme participant à l’autorité souveraine, et sujets, comme soumis aux lois de l’État. (Rousseau, Du contrat social, I.6)</span><br><span class="line">EOF;</span></span><br><span class="line"><span class="variable">$text2</span> = <span class="string">&lt;&lt;&lt;EOF</span><br><span class="line">Fragment B (By Hobbes)：</span><br><span class="line">Art goes yet further, imitating that Rationall and most excellent worke of Nature, Man. For by Art is created that great LEVIATHAN called a COMMON-WEALTH, or STATE, (in latine CIVITAS) which is but an Artificiall Man; though of greater stature and strength than the Naturall, for whoseprotection and defence it was intended; and in which, the Soveraignty is an Artificiall Soul, as giving life and motion to the whole body; The Magistrates, and other Officers of Judicature and Execution, artificiall Joynts; Reward and Punishment (by which fastned to the seat of the Soveraignty, every joynt and member is moved to performe his duty) are the Nerves, that do the same in the Body Naturall; The Wealth and Riches of all the particular members, are the Strength; Salus Populi (the Peoples Safety) its Businesse; Counsellors, by whom all things needfull for it to know, are suggested unto it, are the Memory; Equity and Lawes, an artificiall Reason and Will; Concord, Health; Sedition, Sicknesse; and Civill War, Death. Lastly, the Pacts and Covenants, by which the parts of this Body Politique were at first made, set together, and united, resemble that Fiat, or the Let Us Make Man, pronounced by God in the Creation. (Hobbes, Leviathan, "Introduction"）</span><br><span class="line">EOF;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> similarAlgorithm(<span class="variable">$text1</span> , <span class="variable">$text2</span>);</span><br><span class="line"><span class="comment">/*</span><br><span class="line">* 文本相似度匹配</span><br><span class="line">* <span class="doctag">@author</span> juice</span><br><span class="line">* <span class="doctag">@param</span> text1 匹配文本1</span><br><span class="line">* <span class="doctag">@param</span> text2 匹配文本2</span><br><span class="line">* <span class="doctag">@return</span> double 返回相似度(余弦值)</span><br><span class="line">*/</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">similarAlgorithm</span><span class="params">(<span class="variable">$text1</span> = <span class="string">''</span> , <span class="variable">$text2</span> = <span class="string">''</span>)</span></span>&#123;</span><br><span class="line">    <span class="variable">$charset</span> = <span class="string">'UTF-8'</span> ;</span><br><span class="line">    <span class="variable">$text1Array</span> = mbStringToArray(<span class="variable">$text1</span> , <span class="variable">$charset</span> ,<span class="keyword">TRUE</span>);</span><br><span class="line">    <span class="variable">$text2Array</span> = mbStringToArray(<span class="variable">$text2</span> , <span class="variable">$charset</span> ,<span class="keyword">TRUE</span>);</span><br><span class="line">    <span class="variable">$textSumArray</span> = <span class="keyword">array</span>();</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$text1Array</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)&#123;<span class="comment">//统计该字在第一文本中出现的次数</span></span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$textSumArray</span>[<span class="variable">$val</span>]))&#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">0</span>]++;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$text2Array</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)&#123;<span class="comment">//统计该字在第二文本中出现的次数</span></span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$textSumArray</span>[<span class="variable">$val</span>]))&#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">1</span>]++;</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="variable">$sqdoc1</span> = <span class="number">0</span>;<span class="comment">//平方和</span></span><br><span class="line">    <span class="variable">$sqdoc2</span> = <span class="number">0</span>;<span class="comment">//平方和</span></span><br><span class="line">    <span class="variable">$denominator</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$textSumArray</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)&#123;</span><br><span class="line">        <span class="variable">$denominator</span> += <span class="variable">$val</span>[<span class="number">0</span>] * <span class="variable">$val</span>[<span class="number">1</span>];</span><br><span class="line">        <span class="variable">$sqdoc1</span> += <span class="variable">$val</span>[<span class="number">0</span>] * <span class="variable">$val</span>[<span class="number">0</span>];</span><br><span class="line">        <span class="variable">$sqdoc2</span> += <span class="variable">$val</span>[<span class="number">1</span>] * <span class="variable">$val</span>[<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$denominator</span> / sqrt(<span class="variable">$sqdoc1</span>*<span class="variable">$sqdoc2</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span><br><span class="line">* 分割字符串方法 （支持中文分割）</span><br><span class="line">* <span class="doctag">@author</span> juice</span><br><span class="line">* <span class="doctag">@param</span> str 需要分割的字符串</span><br><span class="line">* <span class="doctag">@param</span> charset 字符串的编码，默认UTF-8</span><br><span class="line">* <span class="doctag">@param</span> convertedToHex 是否返回该字符的16进制，TRUE返回每个字符16进制，FALSE则返回原本字符</span><br><span class="line">* <span class="doctag">@return</span> double 返回相似度(余弦值)</span><br><span class="line">*/</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mbStringToArray</span><span class="params">(<span class="variable">$str</span> = <span class="string">''</span>,<span class="variable">$charset</span> = <span class="string">'UTF-8'</span> , <span class="variable">$convertedToHex</span> = FALSE)</span> </span>&#123;</span><br><span class="line">    <span class="variable">$strlen</span> = mb_strlen(<span class="variable">$str</span>);</span><br><span class="line">    <span class="keyword">if</span>( <span class="variable">$convertedToHex</span> === <span class="keyword">TRUE</span> )&#123;</span><br><span class="line">        <span class="keyword">while</span>(<span class="variable">$strlen</span>)&#123;</span><br><span class="line">            <span class="variable">$array</span>[] = bin2hex(mb_substr(<span class="variable">$str</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="variable">$charset</span>));</span><br><span class="line">            <span class="variable">$str</span> = mb_substr(<span class="variable">$str</span>,<span class="number">1</span>,<span class="variable">$strlen</span>,<span class="variable">$charset</span>);</span><br><span class="line">            <span class="variable">$strlen</span> = mb_strlen(<span class="variable">$str</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">while</span>(<span class="variable">$strlen</span>)&#123;</span><br><span class="line">            <span class="variable">$array</span>[] = mb_substr(<span class="variable">$str</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="variable">$charset</span>);</span><br><span class="line">            <span class="variable">$str</span> = mb_substr(<span class="variable">$str</span>,<span class="number">1</span>,<span class="variable">$strlen</span>,<span class="variable">$charset</span>);</span><br><span class="line">            <span class="variable">$strlen</span> = mb_strlen(<span class="variable">$str</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$array</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure></p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2013-09-curl-400-bad-request" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/09/09/2013-09-curl-400-bad-request/" class="article-date">
-  	<time datetime="2013-09-09T09:30:00.000Z" itemprop="datePublished">2013-09-09</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/09/09/2013-09-curl-400-bad-request/">php curl请求返回400 Bad Request的解决方法</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&amp;nbsp;</span><br><span class="line"><span class="tag">&lt;<span class="title">h1</span>&gt;</span>400 Bad Request<span class="tag">&lt;/<span class="title">h1</span>&gt;</span></span><br><span class="line">&amp;nbsp;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="title">center</span>&gt;</span>nginx/1.2.0<span class="tag">&lt;/<span class="title">center</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>当你使用php的curl方法时会返回400 Bad Request，这有如下几种原因：</p>
-<p>1.远端有检测客户端过滤行为。<br>2.远端有redir行为。<br>3.请求中间层。<br>4.近端有过滤行为。<br>5.某个过程有缓存机制。<br>6.脚本文件编码问题。</p>
-<p>前面5种都是服务器的限制，做一些伪装就可以，但是很多人会忽略掉第六个原因，这是因为Unicode、Unicode big endian和UTF-8编码的txt文件的开头会多出几个字节，分别是FF、FE（Unicode）,FE、FF（Unicode big endian）,EF、BB、BF（UTF-8）。一般只要换成UTF-8编码就没有可以解决了。</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
     <article id="post-2013-09-hijack-browser" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -670,116 +444,6 @@
 
 
   
-    <article id="post-2013-08-parse_str&amp;http_build_query" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/08/29/2013-08-parse_str&http_build_query/" class="article-date">
-  	<time datetime="2013-08-29T04:03:00.000Z" itemprop="datePublished">2013-08-29</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/08/29/2013-08-parse_str&http_build_query/">URL处理的两个关键PHP函数parse_str与http_build_query</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>简单的理解这两个函数</p>
-<p>parse_str就是将一个url ?后面的参数转换成一个数组</p>
-<p>array parse_str(url,arr)</p>
-<p>http_build_query就是将一个数组转换成url ?后面的参数字符串，会自动进行urlencode处理</p>
-<p>string http_build_query ( array formdata [, string numeric_prefix])</p>
-<p>后面的给数组中没有指定键或者键为数字的加下标</p>
-<p>我们知道, PHP的 parse_str() 函数可以将 URL Query 格式的字符串解析成关联数组, 与PHP生成 $_GET 使用的相同的策略. parse_str() 的”反函数”是 http_build_query(), 它将关联数组和对象生成 URL Query 字符串. 不过, 只在PHP5之后才被支持. 所以, 我们需要编写自己的 http_build_query()</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">my_http_build_query</span><span class="params">(<span class="variable">$data</span>)</span> </span>&#123;</span><br><span class="line">    <span class="variable">$str</span> = <span class="string">''</span>;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$data</span> <span class="keyword">as</span> <span class="variable">$key</span> = &gt;<span class="variable">$value</span>) &#123;</span><br><span class="line">        <span class="keyword">foreach</span>(child_str(<span class="variable">$value</span>) <span class="keyword">as</span> <span class="variable">$v</span>) &#123;</span><br><span class="line">            <span class="variable">$str</span>. = <span class="string">"$key$v&amp;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> substr(<span class="variable">$str</span>, <span class="number">0</span>, strlen(<span class="variable">$str</span>) - <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">child_str</span><span class="params">(<span class="variable">$data</span>)</span> </span>&#123;</span><br><span class="line">    <span class="variable">$str</span> = <span class="keyword">array</span>();</span><br><span class="line">    <span class="keyword">if</span> (is_array(<span class="variable">$data</span>)) &#123;</span><br><span class="line">        <span class="keyword">foreach</span>(<span class="variable">$data</span> <span class="keyword">as</span> <span class="variable">$key</span> = &gt;<span class="variable">$value</span>) &#123;</span><br><span class="line">            <span class="keyword">foreach</span>(child_str(<span class="variable">$value</span>) <span class="keyword">as</span> <span class="variable">$v</span>) &#123;</span><br><span class="line">                <span class="variable">$str</span>[] = <span class="string">"[$key]$v"</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// do url encoding here</span></span><br><span class="line">        <span class="variable">$data</span> = str_replace(<span class="string">'&amp;'</span>, <span class="string">'%26'</span>, <span class="string">'='</span>.<span class="variable">$data</span>);</span><br><span class="line">        <span class="variable">$str</span>[] = <span class="variable">$data</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$str</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2013-08-php-oauth2-access_token" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/08/25/2013-08-php-oauth2-access_token/" class="article-date">
-  	<time datetime="2013-08-25T08:18:00.000Z" itemprop="datePublished">2013-08-25</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/08/25/2013-08-php-oauth2-access_token/">php 模拟新浪微博oauth2.0授权获取access_token （跳过授权页）（改）</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?</span></span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">require_once</span> <span class="string">'sina/saetv2.ex.class.php'</span>;</span><br><span class="line"><span class="variable">$o</span> = <span class="keyword">new</span> SaeTOAuthV2 ( WB_AKEY, WB_SKEY);</span><br><span class="line"><span class="variable">$oauth_url</span> = <span class="variable">$o</span>-&gt;getAuthorizeURL (WB_CALLBACK_URL);</span><br><span class="line"><span class="comment">/*</span><br><span class="line">* 要提交的数据</span><br><span class="line">*</span><br><span class="line">*/</span></span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'client_id'</span>] = WB_AKEY;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'response_type'</span>] = <span class="string">'code'</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'redirect_uri'</span>] = urlencode(WB_CALLBACK_URL);</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'action'</span>] = <span class="string">'submit'</span>;</span><br><span class="line"><span class="comment">//$postdata ['userId'] = '用户名';//如果选择cookies登录可不填用户名和密码</span></span><br><span class="line"><span class="comment">//$postdata ['passwd'] = '密码';</span></span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'isLoginSina'</span>] = <span class="number">0</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'from'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'regCallback'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'state'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'ticket'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'withOfficalFlag'</span>] = <span class="number">0</span>;</span><br><span class="line"><span class="comment">//把提交的数据拼接字符串</span></span><br><span class="line"><span class="variable">$postdata_str</span> = <span class="string">''</span>;</span><br><span class="line"><span class="keyword">foreach</span> ( <span class="variable">$postdata</span> <span class="keyword">as</span> <span class="variable">$dk</span> =&gt; <span class="variable">$dv</span> ) &#123;</span><br><span class="line"><span class="variable">$postdata_str</span> .= <span class="variable">$dk</span> . <span class="string">'='</span> . (<span class="variable">$dv</span>) . <span class="string">"&amp;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$postdata_str</span> = trim ( <span class="variable">$postdata_str</span>, <span class="string">'&amp;'</span> );</span><br><span class="line"><span class="variable">$ch</span> = curl_init ();</span><br><span class="line"><span class="variable">$user_agent</span> = <span class="string">'Mozilla/5.0 (Windows; U;</span><br><span class="line">Windows NT 5.1; ru; rv:1.8.0.9) Gecko/20061206 Firefox/1.5.0.9'</span>;</span><br><span class="line"><span class="variable">$cookie_file</span>=tempnam(<span class="string">'temp'</span>,<span class="string">'cookie'</span>);</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_URL, <span class="string">"https://api.weibo.com/oauth2/authorize"</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_SSL_VERIFYPEER, <span class="number">0</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_SSL_VERIFYHOST, <span class="number">0</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_RETURNTRANSFER, <span class="number">1</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_FOLLOWLOCATION, <span class="number">1</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_REFERER, <span class="variable">$oauth_url</span> );</span><br><span class="line"><span class="comment">//curl_setopt ( $ch, CURLOPT_USERAGENT, $user_agent );</span></span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_POST, <span class="keyword">true</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_POSTFIELDS, <span class="variable">$postdata_str</span> );</span><br><span class="line"><span class="comment">//使用cookie传值</span></span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_COOKIE,<span class="string">'*******'</span>);<span class="comment">//*******填写你的cookies，如果选择用户名和密码登录则可以忽略</span></span><br><span class="line">curl_setopt(<span class="variable">$ch</span>,CURLOPT_COOKIEJAR,<span class="variable">$cookie_file</span>);</span><br><span class="line"><span class="variable">$response</span> = curl_exec(<span class="variable">$ch</span>);</span><br><span class="line"><span class="variable">$last_url</span> = curl_getinfo ( <span class="variable">$ch</span>, CURLINFO_EFFECTIVE_URL );</span><br><span class="line"><span class="comment">//$response = str_replace('/oauth2/','https://api.weibo.com/oauth2/',$response);</span></span><br><span class="line"><span class="comment">//print_r($response);</span></span><br><span class="line">print_r(<span class="variable">$_REQUEST</span>);</span><br></pre></td></tr></table></figure>
-<p>我们可以再输出中看到返回的access_token、uid等数据，并且查看该微博已经授权appkey对应的应用。这段代码其实没有什么很大作用，因为还不能自动授权，不过还可以制作自己的微博授权登录界面。如有问题可留言给我，记得留下你的邮箱方便回复。<br>本文参考<a href="http://hi.baidu.com/bing008ok/item/0a2bce068d1f8e0aeafe385d" target="_blank" rel="external">http://hi.baidu.com/bing008ok/item/0a2bce068d1f8e0aeafe385d</a></p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
     <article id="post-2013-08-text-similarity-algorithm" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -856,10 +520,6 @@
 
   
   
-    <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/archives/page/2/">2</a><a class="extend next" rel="next" href="/archives/page/2/">Next &raquo;</a>
-    </nav>
-  
 </div>
       <footer id="footer">
   <div class="outer">
@@ -885,9 +545,9 @@
 		animate: true,
 		isHome: false,
 		isPost: false,
-		isArchive: true,
+		isArchive: false,
 		isTag: false,
-		isCategory: false,
+		isCategory: true,
 		open_in_new: false
 	}
 </script>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>实现文本相似度算法（余弦定理）(转) | juice 博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="最近由于工作项目，需要判断两个txt文本是否相似，于是开始在网上找资料研究，因为在程序中会把文本转换成String再做比较，所以最开始找到了这篇关于 距离编辑算法 Blog写的非常好，受益匪浅。
+于是我决定把它用到项目中，来判断两个文本的相似度。但后来实际操作发现有一些问题：直接说就是查询一本书中的相似章节花了我7、8分钟；这是我不能接受……
+于是停下来仔细分析发现，这种算法在此项目中不是特别适用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="实现文本相似度算法（余弦定理）(转)">
+<meta property="og:url" content="http://juicechu.zhuxi.me/2013/08/25/2013-08-text-similarity-algorithm/index.html">
+<meta property="og:site_name" content="juice 博客">
+<meta property="og:description" content="最近由于工作项目，需要判断两个txt文本是否相似，于是开始在网上找资料研究，因为在程序中会把文本转换成String再做比较，所以最开始找到了这篇关于 距离编辑算法 Blog写的非常好，受益匪浅。
+于是我决定把它用到项目中，来判断两个文本的相似度。但后来实际操作发现有一些问题：直接说就是查询一本书中的相似章节花了我7、8分钟；这是我不能接受……
+于是停下来仔细分析发现，这种算法在此项目中不是特别适用">
+<meta property="og:image" content="http://static.oschina.net/uploads/space/2012/0304/163822_kpyP_100580.png">
+<meta property="og:updated_time" content="2015-10-15T01:49:58.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="实现文本相似度算法（余弦定理）(转)">
+<meta name="twitter:description" content="最近由于工作项目，需要判断两个txt文本是否相似，于是开始在网上找资料研究，因为在程序中会把文本转换成String再做比较，所以最开始找到了这篇关于 距离编辑算法 Blog写的非常好，受益匪浅。
+于是我决定把它用到项目中，来判断两个文本的相似度。但后来实际操作发现有一些问题：直接说就是查询一本书中的相似章节花了我7、8分钟；这是我不能接受……
+于是停下来仔细分析发现，这种算法在此项目中不是特别适用">
+  
+    <link rel="alternative" href="/atom.xml" title="juice 博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="null" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">juice</a></h1>
+		</hgroup>
+
+		
+		<p class="header-subtitle">新的开始</p>
+		
+
+		
+			<div class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						<div class="icon-wrap icon-link hide" data-idx="2">
+							<div class="loopback_l"></div>
+							<div class="loopback_r"></div>
+						</div>
+						
+						
+						<div class="icon-wrap icon-me hide" data-idx="3">
+							<div class="user"></div>
+							<div class="shoulder"></div>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						<li>友情链接</li>
+						
+						
+						<li>关于我</li>
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives">所有文章</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<div class="social">
+							
+								<a class="github" target="_blank" href="/#" title="github">github</a>
+					        
+								<a class="weibo" target="_blank" href="/#" title="weibo">weibo</a>
+					        
+								<a class="rss" target="_blank" href="/#" title="rss">rss</a>
+					        
+								<a class="zhihu" target="_blank" href="/#" title="zhihu">zhihu</a>
+					        
+						</div>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						
+					</div>
+				</section>
+				
+				
+				
+				<section class="switch-part switch-part3">
+					<div id="js-friends">
+					
+			          <a target="_blank" class="main-nav-link switch-friends-link" href="http://localhost:4000/">奥巴马的博客</a>
+			        
+			          <a target="_blank" class="main-nav-link switch-friends-link" href="http://localhost:4000/">卡卡的美丽传说</a>
+			        
+			          <a target="_blank" class="main-nav-link switch-friends-link" href="http://localhost:4000/">本泽马的博客</a>
+			        
+			          <a target="_blank" class="main-nav-link switch-friends-link" href="http://localhost:4000/">吉格斯的博客</a>
+			        
+			          <a target="_blank" class="main-nav-link switch-friends-link" href="http://localhost:4000/">习大大大不同</a>
+			        
+			          <a target="_blank" class="main-nav-link switch-friends-link" href="http://localhost:4000/">托蒂的博客</a>
+			        
+			        </div>
+				</section>
+				
+
+				
+				
+				<section class="switch-part switch-part4">
+				
+					<div id="js-aboutme">我是谁，我从哪里来，我到哪里去？我就是我，是颜色不一样的吃货…</div>
+				</section>
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide">juice</h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<div class="profilepic">
+				<img lazy-src="null" class="js-avatar">
+			</div>
+			<hgroup>
+			  <h1 class="header-author">juice</h1>
+			</hgroup>
+			
+			<p class="header-subtitle">新的开始</p>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives">所有文章</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+				<div class="social">
+					
+						<a class="github" target="_blank" href="/#" title="github">github</a>
+			        
+						<a class="weibo" target="_blank" href="/#" title="weibo">weibo</a>
+			        
+						<a class="rss" target="_blank" href="/#" title="rss">rss</a>
+			        
+						<a class="zhihu" target="_blank" href="/#" title="zhihu">zhihu</a>
+			        
+				</div>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-2013-08-text-similarity-algorithm" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/08/25/2013-08-text-similarity-algorithm/" class="article-date">
+  	<time datetime="2013-08-25T06:28:00.000Z" itemprop="datePublished">2013-08-25</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      实现文本相似度算法（余弦定理）(转)
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+        
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/转载/">转载</a>
+	</div>
+
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近由于工作项目，需要判断两个txt文本是否相似，于是开始在网上找资料研究，因为在程序中会把文本转换成String再做比较，所以最开始找到了这篇关于 <a href="http://wdhdmx.iteye.com/blog/1343856" target="_blank" rel="external">距离编辑算法</a> Blog写的非常好，受益匪浅。</p>
+<p>于是我决定把它用到项目中，来判断两个文本的相似度。但后来实际操作发现有一些问题：直接说就是查询一本书中的相似章节花了我7、8分钟；这是我不能接受……</p>
+<p>于是停下来仔细分析发现，这种算法在此项目中不是特别适用，由于要判断一本书中是否有相同章节，所以每两个章节之间都要比较，若一本书书有x章的话，这里需对比x(x-1)/2次；而此算法采用矩阵的方式，计算两个字符串之间的变化步骤，会遍历两个文本中的每一个字符两两比较，可以推断出时间复杂度至少为document1.length × document2.length，我所比较的章节字数平均在几千～一万字；这样计算实在要了老命。</p>
+<p>想到Lucene中的评分机制，也是算一个相似度的问题，不过它采用的是计算向量间的夹角（余弦公式），在google黑板报中的：<a href="http://www.google.com.hk/ggblog/googlechinablog/2006/07/12_4010.html" target="_blank" rel="external">数学之美（余弦定理和新闻分类）</a> 也有说明，可以通过余弦定理来判断相似度；于是决定自己动手试试。</p>
+<p>首相选择向量的模型：在以字为向量还是以词为向量的问题上，纠结了一会；后来还是觉得用字，虽然词更为准确，但分词却需要增加额外的复杂度，并且此项目要求速度，准确率可以放低，于是还是选择字为向量。</p>
+<p>然后每个字在章节中出现的次数，便是以此字向量的值。现在我们假设：</p>
+<p>章节1中出现的字为：Z1c1,Z1c2,Z1c3,Z1c4……Z1cn；它们在章节中的个数为：Z1n1,Z1n2,Z1n3……Z1nm；</p>
+<p>章节2中出现的字为：Z2c1,Z2c2,Z2c3,Z2c4……Z2cn；它们在章节中的个数为：Z2n1,Z2n2,Z2n3……Z2nm；</p>
+<p>其中，Z1c1和Z2c1表示两个文本中同一个字，Z1n1和Z2n1是它们分别对应的个数，</p>
+<p>最后我们的相似度可以这么计算：<img src="http://static.oschina.net/uploads/space/2012/0304/163822_kpyP_100580.png" alt="公式"></p>
+<p>程序实现如下：（若有可优化或更好的实现请不吝赐教）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CosineSimilarAlgorithm</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">double</span> <span class="title">getSimilarity</span><span class="params">(String doc1, String doc2)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (doc1 != <span class="keyword">null</span> &amp;&amp; doc1.trim().length() &gt; <span class="number">0</span> &amp;&amp; doc2 != <span class="keyword">null</span></span><br><span class="line">                &amp;&amp; doc2.trim().length() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            </span><br><span class="line">            Map&lt;Integer, <span class="keyword">int</span>[]&gt; AlgorithmMap = <span class="keyword">new</span> HashMap&lt;Integer, <span class="keyword">int</span>[]&gt;();</span><br><span class="line">            </span><br><span class="line">            <span class="comment">//将两个字符串中的中文字符以及出现的总数封装到，AlgorithmMap中</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; doc1.length(); i++) &#123;</span><br><span class="line">                <span class="keyword">char</span> d1 = doc1.charAt(i);</span><br><span class="line">                <span class="keyword">if</span>(isHanZi(d1))&#123;</span><br><span class="line">                    <span class="keyword">int</span> charIndex = getGB2312Id(d1);</span><br><span class="line">                    <span class="keyword">if</span>(charIndex != -<span class="number">1</span>)&#123;</span><br><span class="line">                        <span class="keyword">int</span>[] fq = AlgorithmMap.get(charIndex);</span><br><span class="line">                        <span class="keyword">if</span>(fq != <span class="keyword">null</span> &amp;&amp; fq.length == <span class="number">2</span>)&#123;</span><br><span class="line">                            fq[<span class="number">0</span>]++;</span><br><span class="line">                        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                            fq = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">2</span>];</span><br><span class="line">                            fq[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">                            fq[<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">                            AlgorithmMap.put(charIndex, fq);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; doc2.length(); i++) &#123;</span><br><span class="line">                <span class="keyword">char</span> d2 = doc2.charAt(i);</span><br><span class="line">                <span class="keyword">if</span>(isHanZi(d2))&#123;</span><br><span class="line">                    <span class="keyword">int</span> charIndex = getGB2312Id(d2);</span><br><span class="line">                    <span class="keyword">if</span>(charIndex != -<span class="number">1</span>)&#123;</span><br><span class="line">                        <span class="keyword">int</span>[] fq = AlgorithmMap.get(charIndex);</span><br><span class="line">                        <span class="keyword">if</span>(fq != <span class="keyword">null</span> &amp;&amp; fq.length == <span class="number">2</span>)&#123;</span><br><span class="line">                            fq[<span class="number">1</span>]++;</span><br><span class="line">                        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                            fq = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">2</span>];</span><br><span class="line">                            fq[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">                            fq[<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">                            AlgorithmMap.put(charIndex, fq);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            Iterator&lt;Integer&gt; iterator = AlgorithmMap.keySet().iterator();</span><br><span class="line">            <span class="keyword">double</span> sqdoc1 = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">double</span> sqdoc2 = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">double</span> denominator = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span>(iterator.hasNext())&#123;</span><br><span class="line">                <span class="keyword">int</span>[] c = AlgorithmMap.get(iterator.next());</span><br><span class="line">                denominator += c[<span class="number">0</span>]*c[<span class="number">1</span>];</span><br><span class="line">                sqdoc1 += c[<span class="number">0</span>]*c[<span class="number">0</span>];</span><br><span class="line">                sqdoc2 += c[<span class="number">1</span>]*c[<span class="number">1</span>];</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">return</span> denominator / Math.sqrt(sqdoc1*sqdoc2);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(</span><br><span class="line">                    <span class="string">" the Document is null or have not cahrs!!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isHanZi</span><span class="params">(<span class="keyword">char</span> ch)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 判断是否汉字</span></span><br><span class="line">        <span class="keyword">return</span> (ch &gt;= <span class="number">0x4E00</span> &amp;&amp; ch &lt;= <span class="number">0x9FA5</span>);</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/**</span><br><span class="line">     * 根据输入的Unicode字符，获取它的GB2312编码或者ascii编码，</span><br><span class="line">     *</span><br><span class="line">     * <span class="doctag">@param</span> ch</span><br><span class="line">     *            输入的GB2312中文字符或者ASCII字符(128个)</span><br><span class="line">     * <span class="doctag">@return</span> ch在GB2312中的位置，-1表示该字符不认识</span><br><span class="line">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">short</span> <span class="title">getGB2312Id</span><span class="params">(<span class="keyword">char</span> ch)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">byte</span>[] buffer = Character.toString(ch).getBytes(<span class="string">"GB2312"</span>);</span><br><span class="line">            <span class="keyword">if</span> (buffer.length != <span class="number">2</span>) &#123;</span><br><span class="line">                <span class="comment">// 正常情况下buffer应该是两个字节，否则说明ch不属于GB2312编码，故返回'?'，此时说明不认识该字符</span></span><br><span class="line">                <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">int</span> b0 = (<span class="keyword">int</span>) (buffer[<span class="number">0</span>] &amp; <span class="number">0x0FF</span>) - <span class="number">161</span>; <span class="comment">// 编码从A1开始，因此减去0xA1=161</span></span><br><span class="line">            <span class="keyword">int</span> b1 = (<span class="keyword">int</span>) (buffer[<span class="number">1</span>] &amp; <span class="number">0x0FF</span>) - <span class="number">161</span>; <span class="comment">// 第一个字符和最后一个字符没有汉字，因此每个区只收16*6-2=94个汉字</span></span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">short</span>) (b0 * <span class="number">94</span> + b1);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>程序中做了两小的改进，以加快效率：</p>
+<ol>
+<li>只将汉字作为向量，其他的如标点，数字等符号不处理；2. 在HashMap中存放汉字和其在文本中对于的个数时，先将单个汉字通过GB2312编码转换成数字，再存放。</li>
+</ol>
+<p>最后写了个测试，根据两种不同的算法对比下时间，下面是测试结果：</p>
+<p>余弦定理算法：doc1 与 doc2 相似度为：0.9954971, 耗时：22mm</p>
+<p>距离编辑算法：doc1 与 doc2 相似度为：0.99425095, 耗时：322mm</p>
+<p>可见效率有明显提高，算法复杂度大致为：document1.length + document2.length。</p>
+<p>blog转载于<a href="http://my.oschina.net/BreathL/blog/42477" target="_blank" rel="external">http://my.oschina.net/BreathL/blog/42477</a></p>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/2013/08/25/2013-08-php-oauth2-access_token/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption"><</strong>
+      <div class="article-nav-title">
+        
+          php 模拟新浪微博oauth2.0授权获取access_token （跳过授权页）（改）
+        
+      </div>
+    </a>
+  
+  
+    <a href="/2013/08/25/2013-08-first-day/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">第一天</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+<div class="share">
+	<!-- JiaThis Button BEGIN -->
+	<div class="jiathis_style">
+		<span class="jiathis_txt">分享到：</span>
+		<a class="jiathis_button_tsina"></a>
+		<a class="jiathis_button_cqq"></a>
+		<a class="jiathis_button_douban"></a>
+		<a class="jiathis_button_weixin"></a>
+		<a class="jiathis_button_tumblr"></a>
+		<a href="http://www.jiathis.com/share" class="jiathis jiathis_txt jtico jtico_jiathis" target="_blank"></a>
+	</div>
+	<script type="text/javascript" src="http://v3.jiathis.com/code/jia.js?uid=1405949716054953" charset="utf-8"></script>
+	<!-- JiaThis Button END -->
+</div>
+
+
+
+<div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="2013-08-text-similarity-algorithm" data-title="实现文本相似度算法（余弦定理）(转)" data-url="http://juicechu.zhuxi.me/2013/08/25/2013-08-text-similarity-algorithm/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"true"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+    	<div class="footer-left">
+    		&copy; 2015 juice
+    	</div>
+      	<div class="footer-right">
+      		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
+      	</div>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+
+
+<script>
+	var yiliaConfig = {
+		fancybox: true,
+		mathjax: true,
+		animate: true,
+		isHome: false,
+		isPost: true,
+		isArchive: false,
+		isTag: false,
+		isCategory: false,
+		open_in_new: false
+	}
+</script>
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js" type="text/javascript"></script>
+<script src="/js/main.js" type="text/javascript"></script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+  </div>
+</body>
+</html>
