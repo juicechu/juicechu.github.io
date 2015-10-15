@@ -196,6 +196,493 @@
 </nav>
       <div class="body-wrap">
   
+    <article id="post-2014-05-php5.2-upgrade-php5.6" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2014/05/20/2014-05-php5.2-upgrade-php5.6/" class="article-date">
+  	<time datetime="2014-05-20T01:17:00.000Z" itemprop="datePublished">2014-05-20</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/20/2014-05-php5.2-upgrade-php5.6/">PHP 自 5.2 到 5.6 中新增的功能详解</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="截至目前(2014-2),_PHP_的最新稳定版本是_PHP5-5,_但有差不多一半的用户仍在使用已经不在维护_[注]_的_PHP5-2,_其余的一半用户在使用_PHP5-3_[注]-">截至目前(2014.2), PHP 的最新稳定版本是 PHP5.5, 但有差不多一半的用户仍在使用已经不在维护 [注] 的 PHP5.2, 其余的一半用户在使用 PHP5.3 [注].</h2><p>因为 PHP 那“集百家之长”的蛋疼语法，加上社区氛围不好，很多人对新版本，新特征并无兴趣。<br>本文将会介绍自 PHP5.2 起，直至 PHP5.6 中增加的新特征。</p>
+<p>PHP5.2 以前：autoload, PDO 和 MySQLi, 类型约束<br>PHP5.2：JSON 支持<br>PHP5.3：弃用的功能，匿名函数，新增魔术方法，命名空间，后期静态绑定，Heredoc 和 Nowdoc, const, 三元运算符，Phar<br>PHP5.4：Short Open Tag, 数组简写形式，Traits, 内置 Web 服务器，细节修改<br>PHP5.5：yield, list() 用于 foreach, 细节修改<br>PHP5.6: 常量增强，可变函数参数，命名空间增强<br>注：已于2011年1月停止支持： <a href="http://www.php.net/eol.php" target="_blank" rel="external">http://www.php.net/eol.php</a><br>注：<a href="http://w3techs.com/technologies/details/pl-php/5/all" target="_blank" rel="external">http://w3techs.com/technologies/details/pl-php/5/all</a></p>
+<p>PHP5.2以前</p>
+<p>(2006前)<br>顺便介绍一下 PHP5.2 已经出现但值得介绍的特征。</p>
+<p>autoload</p>
+<p>大家可能都知道 __autoload() 函数，如果定义了该函数，那么当在代码中使用一个未定义的类的时候，该函数就会被调用，你可以在该函数中加载相应的类实现文件，如：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">__autoload</span><span class="params">(<span class="variable">$classname</span>)</span></span>&#123;</span><br><span class="line">    <span class="keyword">require_once</span>(<span class="string">"&#123;$classname&#125;.php"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但该函数已经不被建议使用，原因是一个项目中仅能有一个这样的 __autoload() 函数，因为 PHP 不允许函数重名。但当你使用一些类库的时候，难免会出现多个 autoload 函数的需要，于是 spl_autoload_register() 取而代之：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">spl_autoload_register(<span class="function"><span class="keyword">function</span><span class="params">(<span class="variable">$classname</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">require_once</span>(<span class="string">"&#123;$classname&#125;.php"</span>)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>spl_autoload_register() 会将一个函数注册到 autoload 函数列表中，当出现未定义的类的时候，SPL [注] 会按照注册的倒序逐个调用被注册的 autoload 函数，这意味着你可以使用 spl_autoload_register() 注册多个 autoload 函数.</p>
+<p>注：SPL: Standard PHP Library, 标准 PHP 库, 被设计用来解决一些经典问题(如数据结构).</p>
+<p>PDO 和 MySQLi</p>
+<p>即 PHP Data Object, PHP 数据对象，这是 PHP 的新式数据库访问接口。</p>
+<p>按照传统的风格，访问 MySQL 数据库应该是这样子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">// 连接到服务器，选择数据库</span></span><br><span class="line"><span class="variable">$conn</span> = mysql_connect(<span class="string">"localhost"</span>, <span class="string">"user"</span>, <span class="string">"password"</span>);</span><br><span class="line">mysql_select_db(<span class="string">"database"</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 执行 SQL 查询</span></span><br><span class="line"><span class="variable">$type</span> = <span class="variable">$_POST</span>[<span class="string">'type'</span>];</span><br><span class="line"><span class="variable">$sql</span> = <span class="string">"SELECT * FROM `table` WHERE `type` = &#123;$type&#125;"</span>;</span><br><span class="line"><span class="variable">$result</span> = mysql_query(<span class="variable">$sql</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 打印结果</span></span><br><span class="line"><span class="keyword">while</span>(<span class="variable">$row</span> = mysql_fetch_array(<span class="variable">$result</span>, MYSQL_ASSOC))</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">foreach</span>(<span class="variable">$row</span> <span class="keyword">as</span> <span class="variable">$k</span> =&gt; <span class="variable">$v</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"&#123;$k&#125;: &#123;$v&#125;\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 释放结果集，关闭连接</span></span><br><span class="line">mysql_free_result(<span class="variable">$result</span>);</span><br><span class="line">mysql_close(<span class="variable">$conn</span>);</span><br></pre></td></tr></table></figure>
+<p>为了能够让代码实现数据库无关，即一段代码同时适用于多种数据库(例如以上代码仅仅适用于MySQL)，PHP 官方设计了 PDO.</p>
+<p>除此之外，PDO 还提供了更多功能，比如：</p>
+<ol>
+<li>面向对象风格的接口</li>
+<li>SQL预编译(prepare), 占位符语法</li>
+<li>更高的执行效率，作为官方推荐，有特别的性能优化</li>
+<li>支持大部分SQL数据库，更换数据库无需改动代码</li>
+</ol>
+<p>上面的代码用 PDO 实现将会是这样：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 连接到数据库</span></span><br><span class="line"><span class="variable">$conn</span> = <span class="keyword">new</span> PDO(<span class="string">"mysql:host=localhost;dbname=database"</span>, <span class="string">"user"</span>, <span class="string">"password"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 预编译SQL, 绑定参数</span></span><br><span class="line"><span class="variable">$query</span> = <span class="variable">$conn</span>-&gt;prepare(<span class="string">"SELECT * FROM `table` WHERE `type` = :type"</span>);</span><br><span class="line"><span class="variable">$query</span>-&gt;bindParam(<span class="string">"type"</span>, <span class="variable">$_POST</span>[<span class="string">'type'</span>]);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 执行查询并打印结果</span></span><br><span class="line"><span class="keyword">foreach</span>(<span class="variable">$query</span>-&gt;execute() <span class="keyword">as</span> <span class="variable">$row</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$row</span> <span class="keyword">as</span> <span class="variable">$k</span> =&gt; <span class="variable">$v</span>)</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"&#123;$k&#125;: &#123;$v&#125;\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>PDO 是官方推荐的，更为通用的数据库访问方式，如果你没有特殊需求，那么你最好学习和使用 PDO.<br>但如果你需要使用 MySQL 所特有的高级功能，那么你可能需要尝试一下 MySQLi, 因为 PDO 为了能够同时在多种数据库上使用，不会包含那些 MySQL 独有的功能。</p>
+<p>MySQLi 是 MySQL 的增强接口，同时提供面向过程和面向对象接口，也是目前推荐的 MySQL 驱动，旧的C风格 MySQL 接口将会在今后被默认关闭。<br>MySQLi 的用法和以上两段代码相比，没有太多新概念，在此不再给出示例，可以参见 PHP 官网文档 [注]。</p>
+<p>注：<a href="http://www.php.net/manual/en/mysqli.quickstart.php" target="_blank" rel="external">http://www.php.net/manual/en/mysqli.quickstart.php</a></p>
+<p>类型约束</p>
+<p>通过类型约束可以限制参数的类型，不过这一机制并不完善，目前仅适用于类和 callable(可执行类型) 以及 array(数组), 不适用于 string 和 int.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 限制第一个参数为 MyClass, 第二个参数为可执行类型，第三个参数为数组</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">MyFunction</span><span class="params">(MyClass <span class="variable">$a</span>, callable <span class="variable">$b</span>, array <span class="variable">$c</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>PHP5.2</p>
+<p>(2006-2011)</p>
+<p>JSON 支持</p>
+<p>包括 json_encode(), json_decode() 等函数，JSON 算是在 Web 领域非常常用的数据交换格式，可以被 JS 直接支持，JSON 实际上是 JS 语法的一部分。<br>JSON 系列函数，可以将 PHP 中的数组结构与 JSON 字符串进行转换：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$array</span> = [<span class="string">"key"</span> =&gt; <span class="string">"value"</span>, <span class="string">"array"</span> =&gt; [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]];</span><br><span class="line"><span class="variable">$json</span> = json_encode(<span class="variable">$array</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"&#123;$json&#125;\n"</span>;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$object</span> = json_decode(<span class="variable">$json</span>);</span><br><span class="line">print_r(<span class="variable">$object</span>);</span><br><span class="line">输出：</span><br><span class="line"></span><br><span class="line">&#123;<span class="string">"key"</span>:<span class="string">"value"</span>,<span class="string">"array"</span>:[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]&#125;</span><br><span class="line">stdClass Object</span><br><span class="line">(</span><br><span class="line"> [key] =&gt; value</span><br><span class="line"> [<span class="keyword">array</span>] =&gt; <span class="keyword">Array</span></span><br><span class="line">    (</span><br><span class="line">        [<span class="number">0</span>] =&gt; <span class="number">1</span></span><br><span class="line">        [<span class="number">1</span>] =&gt; <span class="number">2</span></span><br><span class="line">        [<span class="number">2</span>] =&gt; <span class="number">3</span></span><br><span class="line">        [<span class="number">3</span>] =&gt; <span class="number">4</span></span><br><span class="line">    )</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>值得注意的是 json_decode() 默认会返回一个对象而非数组，如果需要返回数组需要将第二个参数设置为 true.</p>
+<p>PHP5.3</p>
+<p>(2009-2012)</p>
+<p>PHP5.3 算是一个非常大的更新，新增了大量新特征，同时也做了一些不向下兼容的修改。</p>
+<p>弃用的功能</p>
+<p>以下几个功能被弃用，若在配置文件中启用，则 PHP 会在运行时发出警告。</p>
+<p>Register Globals</p>
+<p>这是 php.ini 中的一个选项(register_globals), 开启后会将所有表单变量($_GET和$_POST)注册为全局变量.<br>看下面的例子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(isAuth())</span><br><span class="line">    <span class="variable">$authorized</span> = <span class="keyword">true</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$authorized</span>)</span><br><span class="line">    <span class="keyword">include</span>(<span class="string">"page.php"</span>);</span><br></pre></td></tr></table></figure>
+<p>这段代码在通过验证时，将 $authorized 设置为 true. 然后根据 $authorized 的值来决定是否显示页面.</p>
+<p>但由于并没有事先把 $authorized 初始化为 false, 当 register_globals 打开时，可能访问 /auth.php?authorized=1 来定义该变量值，绕过身份验证。</p>
+<p>该特征属于历史遗留问题，在 PHP4.2 中被默认关闭，在 PHP5.4 中被移除。</p>
+<p>Magic Quotes</p>
+<p>对应 php.ini 中的选项 magic_quotes_gpc, 这个特征同样属于历史遗留问题，已经在 PHP5.4 中移除。</p>
+<p>该特征会将所有用户输入进行转义，这看上去不错，在第一章我们提到过要对用户输入进行转义。<br>但是 PHP 并不知道哪些输入会进入 SQL , 哪些输入会进入 Shell, 哪些输入会被显示为 HTML, 所以很多时候这种转义会引起混乱。</p>
+<p>Safe Mode</p>
+<p>很多虚拟主机提供商使用 Safe Mode 来隔离多个用户，但 Safe Mode 存在诸多问题，例如某些扩展并不按照 Safe Mode 来进行权限控制。<br>PHP官方推荐使用操作系统的机制来进行权限隔离，让Web服务器以不同的用户权限来运行PHP解释器，请参见第一章中的最小权限原则.</p>
+<p>匿名函数</p>
+<p>也叫闭包(Closures), 经常被用来临时性地创建一个无名函数，用于回调函数等用途。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$func</span> = <span class="function"><span class="keyword">function</span><span class="params">(<span class="variable">$arg</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">print</span> <span class="variable">$arg</span>;</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$func</span>(<span class="string">"Hello World"</span>);</span><br></pre></td></tr></table></figure>
+<p>以上代码定义了一个匿名函数，并赋值给了 $func.<br>可以看到定义匿名函数依旧使用 function 关键字，只不过省略了函数名，直接是参数列表。</p>
+<p>然后我们又调用了 $func 所储存的匿名函数。</p>
+<p>匿名函数还可以用 use 关键字来捕捉外部变量：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">arrayPlus</span><span class="params">(<span class="variable">$array</span>, <span class="variable">$num</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    array_walk(<span class="variable">$array</span>, <span class="function"><span class="keyword">function</span><span class="params">(&amp;<span class="variable">$v</span>)</span> <span class="title">use</span><span class="params">(<span class="variable">$num</span>)</span></span>&#123;</span><br><span class="line">        <span class="variable">$v</span> += <span class="variable">$num</span>;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的代码定义了一个 arrayPlus() 函数(这不是匿名函数), 它会将一个数组($array)中的每一项，加上一个指定的数字($num).</p>
+<p>在 arrayPlus() 的实现中，我们使用了 array_walk() 函数，它会为一个数组的每一项执行一个回调函数，即我们定义的匿名函数。<br>在匿名函数的参数列表后，我们用 use 关键字将匿名函数外的 $num 捕捉到了函数内，以便知道到底应该加上多少。</p>
+<p>魔术方法：<strong>invoke(), </strong>callStatic()</p>
+<p>PHP 的面向对象体系中，提供了若干“魔术方法”，用于实现类似其他语言中的“重载”，如在访问不存在的属性、方法时触发某个魔术方法。</p>
+<p>随着匿名函数的加入，PHP 引入了一个新的魔术方法 __invoke().<br>该魔术方法会在将一个对象作为函数调用时被调用：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__invoke</span><span class="params">(<span class="variable">$str</span>)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"A::__invoke(): &#123;$str&#125;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$a</span> = <span class="keyword">new</span> A;</span><br><span class="line"><span class="variable">$a</span>(<span class="string">"Hello World"</span>);</span><br></pre></td></tr></table></figure>
+<p>输出毫无疑问是：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A::__invoke(): Hello World</span><br></pre></td></tr></table></figure>
+<p>__callStatic() 则会在调用一个不存在的静态方法时被调用。</p>
+<p>命名空间</p>
+<p>PHP的命名空间有着前无古人后无来者的无比蛋疼的语法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="comment">// 命名空间的分隔符是反斜杠，该声明语句必须在文件第一行。</span></span><br><span class="line"><span class="comment">// 命名空间中可以包含任意代码，但只有 **类, 函数, 常量** 受命名空间影响。</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">XXOO</span>\<span class="title">Test</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 该类的完整限定名是 \XXOO\Test\A , 其中第一个反斜杠表示全局命名空间。</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 你还可以在已经文件中定义第二个命名空间，接下来的代码将都位于 \Other\Test2 .</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Other</span>\<span class="title">Test2</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 实例化来自其他命名空间的对象：</span></span><br><span class="line"><span class="variable">$a</span> = <span class="keyword">new</span> \XXOO\Test\A;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span></span>&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 你还可以用花括号定义第三个命名空间</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Other</span> &#123;</span><br><span class="line">// 实例化来自子命名空间的对象：</span><br><span class="line">$<span class="title">b</span> = <span class="title">new</span> <span class="title">Test2</span>\<span class="title">B</span>;</span><br><span class="line"><span class="comment">// 导入来自其他命名空间的名称，并重命名，</span></span><br><span class="line"><span class="comment">// 注意只能导入类，不能用于函数和常量。</span></span><br><span class="line"><span class="keyword">use</span> \<span class="title">XXOO</span>\<span class="title">Test</span>\<span class="title">A</span> <span class="title">as</span> <span class="title">ClassA</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>更多有关命名空间的语法介绍请参见官网 [注].</p>
+<p>命名空间时常和 autoload 一同使用，用于自动加载类实现文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">spl_autoload_register(</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="params">(<span class="variable">$class</span>)</span> </span>&#123;</span><br><span class="line">        spl_autoload(str_replace(<span class="string">"\\"</span>, <span class="string">"/"</span>, <span class="variable">$class</span>));</span><br><span class="line">    &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+<p>当你实例化一个类 \XXOO\Test\A 的时候，这个类的完整限定名会被传递给 autoload 函数，autoload 函数将类名中的命名空间分隔符(反斜杠)替换为斜杠，并包含对应文件。<br>这样可以实现类定义文件分级储存，按需自动加载。</p>
+<p>注：<a href="http://www.php.net/manual/zh/language.namespaces.php" target="_blank" rel="external">http://www.php.net/manual/zh/language.namespaces.php</a></p>
+<p>后期静态绑定</p>
+<p>PHP 的 OPP 机制，具有继承和类似虚函数的功能，例如如下的代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">callFuncXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="variable">$this</span>-&gt;funcXXOO();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">funcXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"A::funcXXOO()"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">funcXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"B::funcXXOO"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$b</span> = <span class="keyword">new</span> B;</span><br><span class="line"><span class="variable">$b</span>-&gt;callFuncXXOO();</span><br></pre></td></tr></table></figure>
+<p>输出是：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">B::funcXXOO</span><br></pre></td></tr></table></figure>
+<p>可以看到，当在 A 中使用 $this-&gt;funcXXOO() 时，体现了“虚函数”的机制，实际调用的是 B::funcXXOO().<br>然而如果将所有函数都改为静态函数：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">callFuncXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="keyword">self</span>::funcXXOO();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">funcXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"A::funcXXOO()"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">funcXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"B::funcXXOO"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$b</span> = <span class="keyword">new</span> B;</span><br><span class="line"><span class="variable">$b</span>-&gt;callFuncXXOO();</span><br></pre></td></tr></table></figure>
+<p>情况就没这么乐观了，输出是：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A::funcXXOO()</span><br></pre></td></tr></table></figure>
+<p>这是因为 self 的语义本来就是“当前类”，所以 PHP5.3 给 static 关键字赋予了一个新功能：后期静态绑定：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">callFuncXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="keyword">static</span>::funcXXOO();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
+<p>这样就会像预期一样输出了：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">B::funcXXOO</span><br></pre></td></tr></table></figure>
+<p>Heredoc 和 Nowdoc</p>
+<p>PHP5.3 对 Heredoc 以及 Nowdoc 进行了一些改进，它们都用于在 PHP 代码中嵌入大段字符串。</p>
+<p>Heredoc 的行为类似于一个双引号字符串：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$name</span> = <span class="string">"MyName"</span>;</span><br><span class="line"><span class="keyword">echo</span> &lt;&lt;&lt; TEXT</span><br><span class="line">My name is <span class="string">"&#123;$name&#125;"</span>.</span><br><span class="line">TEXT;</span><br><span class="line">```php</span><br><span class="line"></span><br><span class="line">Heredoc 以三个左尖括号开始，后面跟一个标识符(TEXT), 直到一个同样的顶格的标识符(不能缩进)结束。</span><br><span class="line">就像双引号字符串一样，其中可以嵌入变量。</span><br><span class="line"></span><br><span class="line">Heredoc 还可以用于函数参数，以及类成员初始化：</span><br><span class="line"></span><br><span class="line">```php</span><br><span class="line">var_dump(<span class="string">&lt;&lt;&lt;EOD</span><br><span class="line">Hello World</span><br><span class="line">EOD</span></span><br><span class="line">);</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">const</span> xx = &lt;&lt;&lt; EOD</span><br><span class="line">        Hello World</span><br><span class="line">        EOD;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$oo</span> = &lt;&lt;&lt; EOD</span><br><span class="line">        Hello World</span><br><span class="line">        EOD;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>Nowdoc 的行为像一个单引号字符串，不能在其中嵌入变量，和 Heredoc 唯一的区别就是，三个左尖括号后的标识符要以单引号括起来：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$name</span> = <span class="string">"MyName"</span>;</span><br><span class="line"><span class="keyword">echo</span> &lt;&lt;&lt; <span class="string">'TEXT'</span></span><br><span class="line">My name is <span class="string">"&#123;$name&#125;"</span>.</span><br><span class="line">TEXT;</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">My name is <span class="string">"&#123;$name&#125;"</span>.</span><br></pre></td></tr></table></figure>
+<p>用 const 定义常量</p>
+<p>PHP5.3 起同时支持在全局命名空间和类中使用 const 定义常量。</p>
+<p>旧式风格：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">define(<span class="string">"XOOO"</span>, <span class="string">"Value"</span>);</span><br><span class="line">新式风格：</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> XXOO = <span class="string">"Value"</span>;</span><br></pre></td></tr></table></figure>
+<p>const 形式仅适用于常量，不适用于运行时才能求值的表达式：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 正确</span></span><br><span class="line"><span class="keyword">const</span> XXOO = <span class="number">1234</span>;</span><br><span class="line"><span class="comment">// 错误</span></span><br><span class="line"><span class="keyword">const</span> XXOO = <span class="number">2</span> * <span class="number">617</span>;</span><br></pre></td></tr></table></figure>
+<p>三元运算符简写形式</p>
+<p>旧式风格：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> <span class="variable">$a</span> ? <span class="variable">$a</span> : <span class="string">"No Value"</span>;</span><br></pre></td></tr></table></figure>
+<p>可简写成：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> <span class="variable">$a</span> ?: <span class="string">"No Value"</span>;</span><br></pre></td></tr></table></figure>
+<p>即如果省略三元运算符的第二个部分，会默认用第一个部分代替。</p>
+<p>Phar</p>
+<p>Phar即PHP Archive, 起初只是Pear中的一个库而已，后来在PHP5.3被重新编写成C扩展并内置到 PHP 中。<br>Phar用来将多个 .php 脚本打包(也可以打包其他文件)成一个 .phar 的压缩文件(通常是ZIP格式)。<br>目的在于模仿 Java 的 .jar, 不对，目的是为了让发布PHP应用程序更加方便。同时还提供了数字签名验证等功能。</p>
+<p>.phar 文件可以像 .php 文件一样，被PHP引擎解释执行，同时你还可以写出这样的代码来包含(require) .phar 中的代码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">require</span>(<span class="string">"xxoo.phar"</span>);</span><br><span class="line"><span class="keyword">require</span>(<span class="string">"phar://xxoo.phar/xo/ox.php"</span>);</span><br></pre></td></tr></table></figure>
+<p>更多信息请参见官网 [注].</p>
+<p>注：<a href="http://www.php.net/manual/zh/phar.using.intro.php" target="_blank" rel="external">http://www.php.net/manual/zh/phar.using.intro.php</a></p>
+<p>PHP5.4</p>
+<p>(2012-2013)</p>
+<p>Short Open Tag</p>
+<p>Short Open Tag 自 PHP5.4 起总是可用。<br>在这里集中讲一下有关 PHP 起止标签的问题。即：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="comment">// Code...</span></span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>通常就是上面的形式，除此之外还有一种简写形式：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?</span> <span class="comment">/* Code... */</span> <span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>还可以把</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span> <span class="keyword">echo</span> <span class="variable">$xxoo</span>;<span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>简写成：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?</span>= <span class="variable">$xxoo</span>;<span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这种简写形式被称为 Short Open Tag, 在 PHP5.3 起被默认开启，在 PHP5.4 起总是可用。<br>使用这种简写形式在 HTML 中嵌入 PHP 变量将会非常方便。</p>
+<p>对于纯 PHP 文件(如类实现文件), PHP 官方建议顶格写起始标记，同时 省略 结束标记。<br>这样可以确保整个 PHP 文件都是 PHP 代码，没有任何输出，否则当你包含该文件后，设置 Header 和 Cookie 时会遇到一些麻烦 [注].</p>
+<p>注：Header 和 Cookie 必须在输出任何内容之前被发送。</p>
+<p>数组简写形式</p>
+<p>这是非常方便的一项特征！</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 原来的数组写法</span></span><br><span class="line"><span class="variable">$arr</span> = <span class="keyword">array</span>(<span class="string">"key"</span> =&gt; <span class="string">"value"</span>, <span class="string">"key2"</span> =&gt; <span class="string">"value2"</span>);</span><br><span class="line"><span class="comment">// 简写形式</span></span><br><span class="line"><span class="variable">$arr</span> = [<span class="string">"key"</span> =&gt; <span class="string">"value"</span>, <span class="string">"key2"</span> =&gt; <span class="string">"value2"</span>];</span><br></pre></td></tr></table></figure>
+<p>Traits</p>
+<p>所谓Traits就是“构件”，是用来替代继承的一种机制。PHP中无法进行多重继承，但一个类可以包含多个Traits.</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Traits不能被单独实例化，只能被类所包含</span></span><br><span class="line"><span class="keyword">trait</span> SayWorld</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">sayHello</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">'World!'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyHelloWorld</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="comment">// 将SayWorld中的成员包含进来</span></span><br><span class="line">    <span class="keyword">use</span> <span class="title">SayWorld</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$xxoo</span> = <span class="keyword">new</span> MyHelloWorld();</span><br><span class="line"><span class="comment">// sayHello() 函数是来自 SayWorld 构件的</span></span><br><span class="line"><span class="variable">$xxoo</span>-&gt;sayHello();</span><br></pre></td></tr></table></figure>
+<p>Traits还有很多神奇的功能，比如包含多个Traits, 解决冲突，修改访问权限，为函数设置别名等等。<br>Traits中也同样可以包含Traits. 篇幅有限不能逐个举例，详情参见官网 [注].</p>
+<p>注：<a href="http://www.php.net/manual/zh/language.oop5.traits.php" target="_blank" rel="external">http://www.php.net/manual/zh/language.oop5.traits.php</a></p>
+<p>内置 Web 服务器</p>
+<p>PHP从5.4开始内置一个轻量级的Web服务器，不支持并发，定位是用于开发和调试环境。</p>
+<p>在开发环境使用它的确非常方便。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -S localhost:<span class="number">8000</span></span><br></pre></td></tr></table></figure>
+<p>这样就在当前目录建立起了一个Web服务器，你可以通过 <a href="http://localhost:8000/" target="_blank" rel="external">http://localhost:8000/</a> 来访问。<br>其中localhost是监听的ip，8000是监听的端口，可以自行修改。</p>
+<p>很多应用中，都会进行URL重写，所以PHP提供了一个设置路由脚本的功能:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -S localhost:<span class="number">8000</span> index.php</span><br></pre></td></tr></table></figure>
+<p>这样一来，所有的请求都会由index.php来处理。</p>
+<p>你还可以使用 XDebug 来进行断点调试。</p>
+<p>细节修改</p>
+<p>PHP5.4 新增了动态访问静态方法的方式：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$func</span> = <span class="string">"funcXXOO"</span>;</span><br><span class="line">A::&#123;<span class="variable">$func</span>&#125;();</span><br></pre></td></tr></table></figure>
+<p>新增在实例化时访问类成员的特征:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">new</span> MyClass)-&gt;xxoo();</span><br></pre></td></tr></table></figure>
+<p>新增支持对函数返回数组的成员访问解析(这种写法在之前版本是会报错的)：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">print</span> func()[<span class="number">0</span>];</span><br></pre></td></tr></table></figure>
+<p>PHP5.5</p>
+<p>(2013起)</p>
+<p>yield</p>
+<p>yield关键字用于当函数需要返回一个迭代器的时候, 逐个返回值。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">number10</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="variable">$i</span> = <span class="number">1</span>; <span class="variable">$i</span> &lt;= <span class="number">10</span>; <span class="variable">$i</span> += <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">yield</span> <span class="variable">$i</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>该函数的返回值是一个数组：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>]</span><br></pre></td></tr></table></figure>
+<p>list() 用于 foreach</p>
+<p>可以用 list() 在 foreach 中解析嵌套的数组：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$array</span> = [</span><br><span class="line">[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],</span><br><span class="line">[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],</span><br><span class="line">];</span><br><span class="line"> </span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$array</span> <span class="keyword">as</span> <span class="keyword">list</span>(<span class="variable">$a</span>, <span class="variable">$b</span>, <span class="variable">$c</span>))</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"&#123;$a&#125; &#123;$b&#125; &#123;$c&#125;\n"</span>;</span><br></pre></td></tr></table></figure>
+<p>结果：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> <span class="number">2</span> <span class="number">3</span></span><br><span class="line"><span class="number">4</span> <span class="number">5</span> <span class="number">6</span></span><br></pre></td></tr></table></figure>
+<p>细节修改</p>
+<p>不推荐使用 mysql 函数，推荐使用 PDO 或 MySQLi, 参见前文。<br>不再支持Windows XP.</p>
+<p>可用 MyClass::class 取到一个类的完整限定名(包括命名空间)。</p>
+<p>empty() 支持表达式作为参数。</p>
+<p>try-catch 结构新增 finally 块。</p>
+<p>PHP5.6</p>
+<p>更好的常量</p>
+<p>定义常量时允许使用之前定义的常量进行计算：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> A = <span class="number">2</span>;</span><br><span class="line"><span class="keyword">const</span> B = A + <span class="number">1</span>;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">const</span> STR = <span class="string">"hello"</span>;</span><br><span class="line">    <span class="keyword">const</span> STR2 = <span class="keyword">self</span>::STR + <span class="string">", world"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>允许常量作为函数参数默认值：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">func</span><span class="params">(<span class="variable">$arg</span> = C::STR2)</span></span></span><br></pre></td></tr></table></figure>
+<p>更好的可变函数参数</p>
+<p>用于代替 func_get_args()</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span><span class="params">(...<span class="variable">$args</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="variable">$result</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$args</span> <span class="keyword">as</span> <span class="variable">$arg</span>)</span><br><span class="line">    <span class="variable">$result</span> += <span class="variable">$arg</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$result</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同时可以在调用函数时，把数组展开为函数参数：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = [<span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line">add(<span class="number">1</span>, ...<span class="variable">$arr</span>);</span><br><span class="line"><span class="comment">// 结果为 6</span></span><br></pre></td></tr></table></figure>
+<p>命名空间</p>
+<p>命名空间支持常量和函数：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Name</span>\<span class="title">Space</span> &#123;</span><br><span class="line">    <span class="title">const</span> <span class="title">FOO</span> = 42;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">f</span><span class="params">()</span> </span>&#123; <span class="keyword">echo</span> <span class="keyword">__FUNCTION__</span>.<span class="string">"\n"</span>; &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> &#123;</span><br><span class="line">    <span class="title">use</span> <span class="title">const</span> <span class="title">Name</span>\<span class="title">Space</span>\<span class="title">FOO</span>;</span><br><span class="line">    <span class="keyword">use</span> <span class="title">function</span> <span class="title">Name</span>\<span class="title">Space</span>\<span class="title">f</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> FOO.<span class="string">"\n"</span>;</span><br><span class="line">    f();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/PHP/">PHP</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2013-12-php-fsock-rsync" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/12/26/2013-12-php-fsock-rsync/" class="article-date">
+  	<time datetime="2013-12-26T11:27:00.000Z" itemprop="datePublished">2013-12-26</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/12/26/2013-12-php-fsock-rsync/">PHP中使用fsock实现伪异步</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在Web开发中，我们经常会遇到这样一个场景：用户发起一个请求，处理这个请求的业务很简单，可能几毫秒或者几十毫秒就能完成；但是这个请求会影响另外一个业务系统，所以我们在处理完用户的请求后，不得不发起一个新的后台请求到相关的业务系统，而相关的业务系统响应我们的后台请求可能非常慢，这样就会延长我们的整个响应时间。</p>
+<p>  实例：我们的用户头像会保存到CDN，当用户更换头像的时候，上传写入可以很快的完成，但是调用CDN的purge接口可能要很久（好几秒），这样就会导致整个上传过程耗时很长。</p>
+<p>当然，要解决这个问题有很多办法；比如把purge接口的请求丢给消息队列，后台计划任务不停地消费消息队列发起purge请求；如果这么做确实可以解决问题，但是把整体架构复杂化了。</p>
+<p>不用消息队列，很多人就会想到用异步；但是项目使用的是PHP，它是顺序执行，不支持异步的，怎么办？</p>
+<p>拜读Laruence早期的文章：</p>
+<p>《PHP实现异步调用方法研究》<br>《使用fscok实现异步调用PHP》<br>根据文章中的介绍，果断采用fsockopen的方法：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">asyncGet</span><span class="params">(<span class="variable">$url</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="variable">$parts</span> = parse_url(<span class="variable">$url</span>);</span><br><span class="line">    <span class="variable">$fp</span> = fsockopen(</span><br><span class="line">        <span class="variable">$parts</span>[<span class="string">'host'</span>],</span><br><span class="line">        <span class="keyword">isset</span>(<span class="variable">$parts</span>[<span class="string">'port'</span>]) ? <span class="variable">$parts</span>[<span class="string">'port'</span>] : <span class="number">80</span>,</span><br><span class="line">        <span class="variable">$errno</span>, <span class="variable">$errstr</span>, <span class="number">3</span></span><br><span class="line">    );</span><br><span class="line">    <span class="variable">$out</span> = <span class="string">"GET "</span> . <span class="variable">$parts</span>[<span class="string">'path'</span>] . <span class="string">" HTTP/1.1\r\n"</span>;</span><br><span class="line">    <span class="variable">$out</span> .= <span class="string">"Host: "</span> . <span class="variable">$parts</span>[<span class="string">'host'</span>] . <span class="string">"\r\n"</span>;</span><br><span class="line">    <span class="variable">$out</span> .= <span class="string">"Connection: Close\r\n\r\n"</span>;</span><br><span class="line">    fwrite(<span class="variable">$fp</span>, <span class="variable">$out</span>);</span><br><span class="line">    fclose(<span class="variable">$fp</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$start</span> = microtime(<span class="keyword">true</span>);</span><br><span class="line">asyncGet(</span><br><span class="line">    <span class="string">'http://cdn.ljf.me/purge.php'</span></span><br><span class="line">);</span><br><span class="line"><span class="variable">$end</span> = microtime(<span class="keyword">true</span>);</span><br><span class="line"><span class="variable">$cost</span> = <span class="variable">$end</span> - <span class="variable">$start</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"purge cdn cost: $cost s\n"</span>;</span><br></pre></td></tr></table></figure>
+<p>问题来了，无论如何发送请求，服务器都没有正常地清洗缓存（直接输入url访问是可以正常清洗的，排除purge接口本身的问题）。</p>
+<p>用WireShark抓到数据包来看，请求确实是有发出，也是正常的。</p>
+<p>为什么请求有发出，但是服务器并没有进行清洗CDN工作，问题可能出现在哪里？</p>
+<p>本地搭出一个测试环境。使用相同的脚本发完请求后，查看php-fpm的access日志没有找到刚才的请求，但是nginx的access是有这个请求的，状态码是499。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1 - - [18/Dec/2013:11:57:57 +0800] "GET /purge.php HTTP/1.1" 499 0 "-" "-" "-"</span><br></pre></td></tr></table></figure>
+<p>在HTTP协议中没有直接定义499的状态码，这个状态码是nginx指定的。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">/* from ngx_http_request.h */</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line"> * HTTP does not define the code for the case when a client closed</span><br><span class="line"> * the connection while we are processing its request so we introduce</span><br><span class="line"> * own code to log such situation when a client has closed the connection</span><br><span class="line"> * before we even try to send the HTTP header to it</span><br><span class="line"> */</span><br><span class="line">#define NGX_HTTP_CLIENT_CLOSED_REQUEST     499</span><br></pre></td></tr></table></figure>
+<p>nginx对499的定义是”client has closed connection”，并且在这些情况下会返回这个状态码：</p>
+<p>upstream 在收到读写事件处理之前时发现连接不可用。<br>server处理请求未结束，而client提前关闭了连接。<br>upstream出错，执行next_upstream时发现连接不可用。<br>现在的问题是：我们要等nginx的upstream处理完并且把请求交给fastcgi之后，才能主动关闭连接，否则就不能正常的清洗CDN的缓存了。</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">asyncGet</span><span class="params">(<span class="variable">$url</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="variable">$parts</span> = parse_url(<span class="variable">$url</span>);</span><br><span class="line">    <span class="variable">$fp</span> = fsockopen(</span><br><span class="line">        <span class="variable">$parts</span>[<span class="string">'host'</span>],</span><br><span class="line">        <span class="keyword">isset</span>(<span class="variable">$parts</span>[<span class="string">'port'</span>]) ? <span class="variable">$parts</span>[<span class="string">'port'</span>] : <span class="number">80</span>,</span><br><span class="line">        <span class="variable">$errno</span>, <span class="variable">$errstr</span>, <span class="number">3</span></span><br><span class="line">    );</span><br><span class="line">    <span class="variable">$out</span> = <span class="string">"GET "</span> . <span class="variable">$parts</span>[<span class="string">'path'</span>] . <span class="string">" HTTP/1.1\r\n"</span>;</span><br><span class="line">    <span class="variable">$out</span> .= <span class="string">"Host: "</span> . <span class="variable">$parts</span>[<span class="string">'host'</span>] . <span class="string">"\r\n"</span>;</span><br><span class="line">    <span class="variable">$out</span> .= <span class="string">"Connection: Close\r\n\r\n"</span>;</span><br><span class="line">    fwrite(<span class="variable">$fp</span>, <span class="variable">$out</span>);</span><br><span class="line">    usleep(<span class="number">10000</span>);</span><br><span class="line">    fclose(<span class="variable">$fp</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一个不安全的做法是在fclose之前，让当前的进程先睡眠一段时间；我这里设置为10毫秒，这10毫秒的延迟对我完成整个请求的影响不大，同时我也认为nginx一定能在10毫米内把请求转到fastcgi去执行。这个时间间隔很难把握，不能保证php一定有执行到。</p>
+<p>这种方式并不是真正的异步，只是很取巧的强制关闭连接而不等待服务器端响应。所以在Laruence的那2篇文章中，有2个问题：</p>
+<p>PHP使用fsock不能叫做异步，只是伪异步。<br>fwrite之后马上执行fclose，nginx会直接返回499。<br>Laruence这2篇博文都是08年写的，不知道当时是不是用apache做的测试。因为没有使用apache的场景，所以也就不打算用apache再验证一次。</p>
+<p>转载自：<a href="http://ljf.me/archives/use-sock-to-implement-the-async-in-php" target="_blank" rel="external">http://ljf.me/archives/use-sock-to-implement-the-async-in-php</a></p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/PHP/">PHP</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2013-11-nginx-fpm-file-not-find" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/11/22/2013-11-nginx-fpm-file-not-find/" class="article-date">
+  	<time datetime="2013-11-22T02:29:00.000Z" itemprop="datePublished">2013-11-22</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/11/22/2013-11-nginx-fpm-file-not-find/">ubuntu下配置nginx+php-fpm的file not find问题</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>第一种情况下sudo vim /etc/nginx/sites-enable/default下配置</p>
+<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">location</span> <span class="regexp">~ \.php$</span> &#123;</span><br><span class="line">    <span class="title">try_files</span> <span class="variable">$uri</span> =<span class="number">404</span>;</span><br><span class="line">    <span class="title">fastcgi_split_path_info</span><span class="regexp"> ^(.+\.php)(/.+)$</span>;</span><br><span class="line">    <span class="title">fastcgi_pass</span> <span class="url">unix:/var/run/php5-fpm.sock</span>;</span><br><span class="line">    <span class="title">fastcgi_index</span> index.php;</span><br><span class="line">    <span class="title">fastcgi_read_timeout</span> <span class="number">300</span>;</span><br><span class="line">    <span class="title">fastcgi_param</span> SCRIPT_FILENAME <span class="variable">$document_root</span><span class="variable">$fastcgi_script_name</span>;</span><br><span class="line">    <span class="title">include</span> fastcgi_params;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第二种情况就是 /etc/php5/fpm/pool.d/www.conf</p>
+<p>文件配置下user = XXX必须与你/etc/nginx/nginx.conf的配置下user =XXX 一置，而且XXX必须是有访问权限。</p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/原创/">原创</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2013-11-phpmyadmin-mcrypt-extension-is-missing" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/11/22/2013-11-phpmyadmin-mcrypt-extension-is-missing/" class="article-date">
+  	<time datetime="2013-11-22T02:21:00.000Z" itemprop="datePublished">2013-11-22</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/11/22/2013-11-phpmyadmin-mcrypt-extension-is-missing/">phpmyadmin页面提示mcrypt extension is missing错误解决</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>这是一个mcrypt文件位置错误的bug</p>
+<p>详细的bug信息请参考以下网址：</p>
+<p><a href="https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035</a></p>
+<p>#mv -i /etc/php5/conf.d/mcrypt.ini /etc/php5/mods-available/</p>
+<p>#sudo php5enmod mcrypt</p>
+<p>#/etc/init.d/apache2 restart</p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/原创/">原创</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2013-10-multi-process-write" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/10/27/2013-10-multi-process-write/" class="article-date">
+  	<time datetime="2013-10-27T13:17:00.000Z" itemprop="datePublished">2013-10-27</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/10/27/2013-10-multi-process-write/">多进程写文件</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 多进程写文件</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">write_file</span><span class="params">(<span class="variable">$filename</span>, <span class="variable">$content</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="variable">$lock</span> = <span class="variable">$filename</span> . <span class="string">'.lck'</span>;<span class="comment">//与文件名关联的加锁文件</span></span><br><span class="line">    <span class="variable">$write_length</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span>( file_exists(<span class="variable">$lock</span>) ) &#123;<span class="comment">//判断是否已存在该锁，存在则证明已有进程在写文件，休眠100毫秒</span></span><br><span class="line">            usleep(<span class="number">100</span>);<span class="comment">//休眠100毫秒</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            touch(<span class="variable">$lock</span>);<span class="comment">//加锁</span></span><br><span class="line">            <span class="variable">$write_length</span> = file_put_contents(<span class="variable">$filename</span>, <span class="variable">$content</span>, FILE_APPEND);<span class="comment">//写文件</span></span><br><span class="line">            <span class="keyword">break</span>;<span class="comment">//退出循环</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>( file_exists(<span class="variable">$lock</span>) ) &#123;</span><br><span class="line">        unlink(<span class="variable">$lock</span>);<span class="comment">//解锁</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$write_length</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/原创/">原创</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
     <article id="post-2013-10-php-foreach-object" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -468,375 +955,6 @@
       
 	<div class="article-category tagcloud">
 	<a class="article-category-link" href="/categories/原创/">原创</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2013-09-hijack-browser" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/09/05/2013-09-hijack-browser/" class="article-date">
-  	<time datetime="2013-09-04T16:09:00.000Z" itemprop="datePublished">2013-09-05</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/09/05/2013-09-hijack-browser/">看我如何劫持用户的浏览器</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>标题起的有点大有点夸张，但应该引起重视，起因是我在搜索一个东西的时候，打开了一个垃圾站点，神奇的事情发生了，新标签打开这个站点后，我的Google搜索页面自动跳转到广告页面了，出于好奇必须研究一下，首先它控制了我的Google搜索页面，所以我猜测它代码里有“Google”这个关键词，在Chrome控制台用强大的ctrl+shift+f搜到了几个js文件，前面都是Google广告的js，最后一个js.js是咸鱼饭，于是在这个文件里找到可疑的被加密的代码位置下了个断点。</p>
-<p><img src="http://i.wanz.im/wp-content/uploads/2013/07/evilcodes.png" alt="p1"></p>
-<p>经过耐心一直按F11跟踪后，控制台VM输出了解密后的关键函数。<br><img src="http://i.wanz.im/wp-content/uploads/2013/07/decoded-evil-codes.png" alt="p2"></p>
-<p>看到这里基本上就知道了垃圾站劫持搜索页面的方法了，代码很简单有点基础的同学应该都可以看懂，这时我的想法是这么简单，我怎么没想到，思路很重要，到这里代码分析及实现原理就这样完了，简单到没什么可以讲的了。</p>
-<p>垃圾站用这样的方式来刷流量刷广告很正常，但是我想到的是更可怕的事情，被访问页面可以劫持用户的来源页面，也就产生了一个钓鱼攻击的利用场景：</p>
-<p>1，用户A在微博看到一个链接好奇打开了；<br>2，被打开的页面evilA用一些吸引眼球的内容抓住用户的注意力；<br>3，微博页面被劫持跳转到钓鱼页面，例如一个假的高仿的微博页面evilB；<br>4，当用户关闭页面evilA，打算继续看微博的时候，此时他看到的是高仿的微博页面evilB，而用户没留意到页面已经被替换；<br>5，高仿的微博页面evilB提示登录超时，要求用户重新登录，用户输入帐号密码；<br>6，高仿的微博页面evilB记录用户密码后再跳回正常的微博页面，用户帐号在不知不觉中被盗；</p>
-<p>测试页面：<a href="http://wanz.im/demo/referrer-hijacking.html" target="_blank" rel="external">http://wanz.im/demo/referrer-hijacking.html</a></p>
-<p>Chrome 28.0.1500.72 m，Firefox 22.0成功劫持，IE 10.0.9200.16635提示没有权限</p>
-<p>当然上述是理想状态下的钓鱼攻击，高端点的利用就是程序通过referrer信息立刻生成一个相同的页面来钓鱼，不注意防范依然有风险存在，上网需谨慎！</p>
-<p>转载自：<a href="http://i.wanz.im/2013/07/19/hijacking-referrer-page/" target="_blank" rel="external">http://i.wanz.im/2013/07/19/hijacking-referrer-page/</a></p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2013-09-csrf" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/09/03/2013-09-csrf/" class="article-date">
-  	<time datetime="2013-09-03T13:22:00.000Z" itemprop="datePublished">2013-09-03</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/09/03/2013-09-csrf/">浅谈CSRF攻击方式</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>一.CSRF是什么？</p>
-<p>　　CSRF（Cross-site request forgery），中文名称：跨站请求伪造，也被称为：one click attack/session riding，缩写为：CSRF/XSRF。</p>
-<p>二.CSRF可以做什么？</p>
-<p>你这可以这么理解CSRF攻击：攻击者盗用了你的身份，以你的名义发送恶意请求。CSRF能够做的事情包括：以你名义发送邮件，发消息，盗取你的账号，甚至于购买商品，虚拟货币转账……造成的问题包括：个人隐私泄露以及财产安全。</p>
-<p>三.CSRF漏洞现状</p>
-<p>CSRF这种攻击方式在2000年已经被国外的安全人员提出，但在国内，直到06年才开始被关注，08年，国内外的多个大型社区和交互网站分别爆出CSRF漏洞，如：NYTimes.com（纽约时报）、Metafilter（一个大型的BLOG网站），YouTube和百度HI……而现在，互联网上的许多站点仍对此毫无防备，以至于安全业界称CSRF为“沉睡的巨人”。</p>
-<p>四.CSRF的原理</p>
-<p>下图简单阐述了CSRF攻击的思想：</p>
-<p>￼</p>
-<p>从上图可以看出，要完成一次CSRF攻击，受害者必须依次完成两个步骤：</p>
-<p>1.登录受信任网站A，并在本地生成Cookie。</p>
-<p>2.在不登出A的情况下，访问危险网站B。</p>
-<p>看到这里，你也许会说：“如果我不满足以上两个条件中的一个，我就不会受到CSRF的攻击”。是的，确实如此，但你不能保证以下情况不会发生：</p>
-<p>1.你不能保证你登录了一个网站后，不再打开一个tab页面并访问另外的网站。</p>
-<p>2.你不能保证你关闭浏览器了后，你本地的Cookie立刻过期，你上次的会话已经结束。（事实上，关闭浏览器不能结束一个会话，但大多数人都会错误的认为关闭浏览器就等于退出登录/结束会话了……）</p>
-<p>3.上图中所谓的攻击网站，可能是一个存在其他漏洞的可信任的经常被人访问的网站。</p>
-<p>上面大概地讲了一下CSRF攻击的思想，下面我将用几个例子详细说说具体的CSRF攻击，这里我以一个银行转账的操作作为例子（仅仅是例子，真实的银行网站没这么傻:&gt;）</p>
-<p>　　示例1：</p>
-<p>银行网站A，它以GET请求来完成银行转账的操作，如：<a href="http://www.mybank.com/Transfer.php?toBankId=11&amp;money=1000" target="_blank" rel="external">http://www.mybank.com/Transfer.php?toBankId=11&amp;money=1000</a></p>
-<p>危险网站B，它里面有一段HTML的代码如下：</p>
-<p>　　<img src="http://www.mybank.com/Transfer.php?toBankId=11&money=1000"><br>首先，你登录了银行网站A，然后访问危险网站B，噢，这时你会发现你的银行账户少了1000块……</p>
-<p>为什么会这样呢？原因是银行网站A违反了HTTP规范，使用GET请求更新资源。在访问危险网站B的之前，你已经登录了银行网站A，而B中的图以GET的方式请求第三方资源（这里的第三方就是指银行网站了，原本这是一个合法的请求，但这里被不法分子利用了），所以你的浏览器会带上你的银行网站A的Cookie发出Get请求，去获取资源“<a href="http://www.mybank.com/Transfer.php?toBankId=11&amp;money=1000”，结果银行网站服务器收到请求后，认为这是一个更新资源操作（转账操作），所以就立刻进行转账操作" target="_blank" rel="external">http://www.mybank.com/Transfer.php?toBankId=11&amp;money=1000”，结果银行网站服务器收到请求后，认为这是一个更新资源操作（转账操作），所以就立刻进行转账操作</a>……</p>
-<p>示例2：</p>
-<p>为了杜绝上面的问题，银行决定改用POST请求完成转账操作。</p>
-<p>银行网站A的WEB表单如下：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">form action="Transfer.php" method="POST"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">p</span>&gt;</span>ToBankId: <span class="tag">&lt;<span class="title">input type="text" name="toBankId" </span>/&gt;</span><span class="tag">&lt;/<span class="title">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">p</span>&gt;</span>Money: <span class="tag">&lt;<span class="title">input type="text" name="money" </span>/&gt;</span><span class="tag">&lt;/<span class="title">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">p</span>&gt;</span><span class="tag">&lt;<span class="title">input type="submit" value="Transfer" </span>/&gt;</span><span class="tag">&lt;/<span class="title">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>后台处理页面Transfer.php如下：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$_REQUEST</span>[<span class="string">'toBankId'</span>] &amp;&amp;　<span class="keyword">isset</span>(<span class="variable">$_REQUEST</span>[<span class="string">'money'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">    buy_stocks(<span class="variable">$_REQUEST</span>[<span class="string">'toBankId'</span>],　<span class="variable">$_REQUEST</span>[<span class="string">'money'</span>]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>危险网站B，仍然只是包含那句HTML代码：</p>
-<p>　　<img src="http://www.mybank.com/Transfer.php?toBankId=11&money=1000"><br>和示例1中的操作一样，你首先登录了银行网站A，然后访问危险网站B，结果…..和示例1一样，你再次没了1000块～T_T，这次事故的原因是：银行后台使用了$_REQUEST去获取请求的数据，而$_REQUEST既可以获取GET请求的数据，也可以获取POST请求的数据，这就造成了在后台处理程序无法区分这到底是GET请求的数据还是POST请求的数据。在PHP中，可以使用$_GET和$_POST分别获取GET请求和POST请求的数据。在JAVA中，用于获取请求数据request一样存在不能区分GET请求数据和POST数据的问题。</p>
-<p>示例3：</p>
-<p>经过前面2个惨痛的教训，银行决定把获取请求数据的方法也改了，改用$_POST，只获取POST请求的数据，后台处理页面Transfer.php代码如下：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">'toBankId'</span>] &amp;&amp;　<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">'money'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">    buy_stocks(<span class="variable">$_POST</span>[<span class="string">'toBankId'</span>],　<span class="variable">$_POST</span>[<span class="string">'money'</span>]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>然而，危险网站B与时俱进，它改了一下代码：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">script</span> <span class="attribute">type</span>=<span class="value">"text/javascript"</span>&gt;</span><span class="javascript"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">steal</span>(<span class="params"></span>)</span><br><span class="line"></span>&#123;</span><br><span class="line">iframe = <span class="built_in">document</span>.frames[<span class="string">"steal"</span>];</span><br><span class="line">iframe.document.Submit(<span class="string">"transfer"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="title">body onload="steal()"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">iframe name="steal" display="none"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">form method="POST" name="transfer"　action="http:</span>//<span class="attribute">www.myBank.com</span>/<span class="attribute">Transfer.php</span>"&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type="hidden" name="toBankId" value="11"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type="hidden" name="money" value="1000"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">iframe</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>如果用户仍是继续上面的操作，很不幸，结果将会是再次不见1000块……因为这里危险网站B暗地里发送了POST请求到银行!</p>
-<p>总结一下上面3个例子，CSRF主要的攻击模式基本上是以上的3种，其中以第1,2种最为严重，因为触发条件很简单，一个就可以了，而第3种比较麻烦，需要使用JavaScript，所以使用的机会会比前面的少很多，但无论是哪种情况，只要触发了CSRF攻击，后果都有可能很严重。</p>
-<p>理解上面的3种攻击模式，其实可以看出，CSRF攻击是源于WEB的隐式身份验证机制！WEB的身份验证机制虽然可以保证一个请求是来自于某个用户的浏览器，但却无法保证该请求是用户批准发送的！</p>
-<p>五.CSRF的防御</p>
-<p>我总结了一下看到的资料，CSRF的防御可以从服务端和客户端两方面着手，防御效果是从服务端着手效果比较好，现在一般的CSRF防御也都在服务端进行。</p>
-<p>1.服务端进行CSRF防御</p>
-<p>服务端的CSRF方式方法很多样，但总的思想都是一致的，就是在客户端页面增加伪随机数。</p>
-<p>(1).Cookie Hashing(所有表单都包含同一个伪随机值)：</p>
-<p>这可能是最简单的解决方案了，因为攻击者不能获得第三方的Cookie(理论上)，所以表单中的数据也就构造失败了:&gt;</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="comment">//构造加密的Cookie信息</span></span><br><span class="line"><span class="variable">$value </span>= “DefenseSCRF”;</span><br><span class="line">setcookie(”cookie”, <span class="variable">$value</span>, time()+<span class="number">3600</span>);</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>在表单里增加Hash值，以认证这确实是用户发送的请求。</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="php"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="variable">$hash </span>= md5(<span class="variable">$_COOKIE</span>[<span class="string">'cookie'</span>]);</span><br><span class="line"><span class="preprocessor">?&gt;</span></span></span><br><span class="line"><span class="tag">&lt;<span class="title">form method=”POST” action=”transfer.php”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”text” name=”toBankId”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”text” name=”money”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”hidden” name=”hash” value=”</span><span class="php"><span class="preprocessor">&lt;?</span>=<span class="variable">$hash</span>;<span class="preprocessor">?&gt;</span></span>”&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”submit” name=”submit” value=”Submit”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>然后在服务器端进行Hash值验证</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">'check'</span>])) &#123;</span><br><span class="line"><span class="variable">$hash </span>= md5(<span class="variable">$_COOKIE</span>[<span class="string">'cookie'</span>]);</span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$_POST</span>[<span class="string">'check'</span>] == <span class="variable">$hash</span>) &#123;</span><br><span class="line">doJob();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>这个方法个人觉得已经可以杜绝99%的CSRF攻击了，那还有1%呢….由于用户的Cookie很容易由于网站的XSS漏洞而被盗取，这就另外的1%。一般的攻击者看到有需要算Hash值，基本都会放弃了，某些除外，所以如果需要100%的杜绝，这个不是最好的方法。<br>(2).验证码</p>
-<p>这个方案的思路是：每次的用户提交都需要用户在表单中填写一个图片上的随机字符串，厄….这个方案可以完全解决CSRF，但个人觉得在易用性方面似乎不是太好，还有听闻是验证码图片的使用涉及了一个被称为MHTML的Bug，可能在某些版本的微软IE中受影响。</p>
-<p>(3).One-Time Tokens(不同的表单包含一个不同的伪随机值)</p>
-<p>在实现One-Time Tokens时，需要注意一点：就是“并行会话的兼容”。如果用户在一个站点上同时打开了两个不同的表单，CSRF保护措施不应该影响到他对任何表单的提交。考虑一下如果每次表单被装入时站点生成一个伪随机值来覆盖以前的伪随机值将会发生什么情况：用户只能成功地提交他最后打开的表单，因为所有其他的表单都含有非法的伪随机值。必须小心操作以确保CSRF保护措施不会影响选项卡式的浏览或者利用多个浏览器窗口浏览一个站点。</p>
-<p>以下我的实现:</p>
-<p>1).先是令牌生成函数(gen_token())：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">gen_token</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="comment">//这里我是贪方便，实际上单使用Rand()得出的随机数作为令牌，也是不安全的。</span></span><br><span class="line"><span class="comment">//这个可以参考我写的Findbugs笔记中的《Random object created and used only once》</span></span><br><span class="line"><span class="variable">$token </span>= md5(uniqid(rand(), <span class="keyword">true</span>));</span><br><span class="line"><span class="keyword">return</span> <span class="variable">$token</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>2).然后是Session令牌生成函数(gen_stoken())：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">gen_stoken</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="variable">$pToken</span> = <span class="string">""</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$_SESSION</span>[STOKEN_NAME]  == <span class="variable">$pToken</span>)&#123;</span><br><span class="line"><span class="comment">//没有值，赋新值</span></span><br><span class="line"><span class="variable">$_SESSION</span>[STOKEN_NAME] = gen_token();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line"><span class="comment">//继续使用旧的值</span></span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>3).WEB表单生成隐藏输入域的函数：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">gen_input</span><span class="params">()</span> </span>&#123;</span><br><span class="line">gen_stoken();</span><br><span class="line"><span class="keyword">echo</span> “&lt;input type=\”hidden\” name=\”<span class="string">" . FTOKEN_NAME . “\”</span><br><span class="line">value=\”"</span> . <span class="variable">$_SESSION</span>[STOKEN_NAME] . “\”&gt; “;</span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>4).WEB表单结构：</p>
-<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="php"><span class="preprocessor">&lt;?php</span></span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">include</span>(”functions.php”);</span><br><span class="line"><span class="preprocessor">?&gt;</span></span></span><br><span class="line"><span class="tag">&lt;<span class="title">form method=”POST” action=”transfer.php”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”text” name=”toBankId”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”text” name=”money”</span>&gt;</span></span><br><span class="line"><span class="php"><span class="preprocessor">&lt;?</span> gen_input(); <span class="preprocessor">?&gt;</span></span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”submit” name=”submit” value=”Submit”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">FORM</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>5).服务端核对令牌：</p>
-<p>这个很简单，这里就不再啰嗦了。</p>
-<p>上面这个其实不完全符合“并行会话的兼容”的规则，大家可以在此基础上修改。</p>
-<p>转载请说明出处，谢谢[hyddd(<a href="http://www.cnblogs.com/hyddd/" target="_blank" rel="external">http://www.cnblogs.com/hyddd/</a>)]</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2013-08-parse_str&amp;http_build_query" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/08/29/2013-08-parse_str&http_build_query/" class="article-date">
-  	<time datetime="2013-08-29T04:03:00.000Z" itemprop="datePublished">2013-08-29</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/08/29/2013-08-parse_str&http_build_query/">URL处理的两个关键PHP函数parse_str与http_build_query</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>简单的理解这两个函数</p>
-<p>parse_str就是将一个url ?后面的参数转换成一个数组</p>
-<p>array parse_str(url,arr)</p>
-<p>http_build_query就是将一个数组转换成url ?后面的参数字符串，会自动进行urlencode处理</p>
-<p>string http_build_query ( array formdata [, string numeric_prefix])</p>
-<p>后面的给数组中没有指定键或者键为数字的加下标</p>
-<p>我们知道, PHP的 parse_str() 函数可以将 URL Query 格式的字符串解析成关联数组, 与PHP生成 $_GET 使用的相同的策略. parse_str() 的”反函数”是 http_build_query(), 它将关联数组和对象生成 URL Query 字符串. 不过, 只在PHP5之后才被支持. 所以, 我们需要编写自己的 http_build_query()</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">my_http_build_query</span><span class="params">(<span class="variable">$data</span>)</span> </span>&#123;</span><br><span class="line">    <span class="variable">$str</span> = <span class="string">''</span>;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$data</span> <span class="keyword">as</span> <span class="variable">$key</span> = &gt;<span class="variable">$value</span>) &#123;</span><br><span class="line">        <span class="keyword">foreach</span>(child_str(<span class="variable">$value</span>) <span class="keyword">as</span> <span class="variable">$v</span>) &#123;</span><br><span class="line">            <span class="variable">$str</span>. = <span class="string">"$key$v&amp;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> substr(<span class="variable">$str</span>, <span class="number">0</span>, strlen(<span class="variable">$str</span>) - <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">child_str</span><span class="params">(<span class="variable">$data</span>)</span> </span>&#123;</span><br><span class="line">    <span class="variable">$str</span> = <span class="keyword">array</span>();</span><br><span class="line">    <span class="keyword">if</span> (is_array(<span class="variable">$data</span>)) &#123;</span><br><span class="line">        <span class="keyword">foreach</span>(<span class="variable">$data</span> <span class="keyword">as</span> <span class="variable">$key</span> = &gt;<span class="variable">$value</span>) &#123;</span><br><span class="line">            <span class="keyword">foreach</span>(child_str(<span class="variable">$value</span>) <span class="keyword">as</span> <span class="variable">$v</span>) &#123;</span><br><span class="line">                <span class="variable">$str</span>[] = <span class="string">"[$key]$v"</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// do url encoding here</span></span><br><span class="line">        <span class="variable">$data</span> = str_replace(<span class="string">'&amp;'</span>, <span class="string">'%26'</span>, <span class="string">'='</span>.<span class="variable">$data</span>);</span><br><span class="line">        <span class="variable">$str</span>[] = <span class="variable">$data</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$str</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2013-08-php-oauth2-access_token" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/08/25/2013-08-php-oauth2-access_token/" class="article-date">
-  	<time datetime="2013-08-25T08:18:00.000Z" itemprop="datePublished">2013-08-25</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/08/25/2013-08-php-oauth2-access_token/">php 模拟新浪微博oauth2.0授权获取access_token （跳过授权页）（改）</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?</span></span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">require_once</span> <span class="string">'sina/saetv2.ex.class.php'</span>;</span><br><span class="line"><span class="variable">$o</span> = <span class="keyword">new</span> SaeTOAuthV2 ( WB_AKEY, WB_SKEY);</span><br><span class="line"><span class="variable">$oauth_url</span> = <span class="variable">$o</span>-&gt;getAuthorizeURL (WB_CALLBACK_URL);</span><br><span class="line"><span class="comment">/*</span><br><span class="line">* 要提交的数据</span><br><span class="line">*</span><br><span class="line">*/</span></span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'client_id'</span>] = WB_AKEY;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'response_type'</span>] = <span class="string">'code'</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'redirect_uri'</span>] = urlencode(WB_CALLBACK_URL);</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'action'</span>] = <span class="string">'submit'</span>;</span><br><span class="line"><span class="comment">//$postdata ['userId'] = '用户名';//如果选择cookies登录可不填用户名和密码</span></span><br><span class="line"><span class="comment">//$postdata ['passwd'] = '密码';</span></span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'isLoginSina'</span>] = <span class="number">0</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'from'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'regCallback'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'state'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'ticket'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'withOfficalFlag'</span>] = <span class="number">0</span>;</span><br><span class="line"><span class="comment">//把提交的数据拼接字符串</span></span><br><span class="line"><span class="variable">$postdata_str</span> = <span class="string">''</span>;</span><br><span class="line"><span class="keyword">foreach</span> ( <span class="variable">$postdata</span> <span class="keyword">as</span> <span class="variable">$dk</span> =&gt; <span class="variable">$dv</span> ) &#123;</span><br><span class="line"><span class="variable">$postdata_str</span> .= <span class="variable">$dk</span> . <span class="string">'='</span> . (<span class="variable">$dv</span>) . <span class="string">"&amp;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$postdata_str</span> = trim ( <span class="variable">$postdata_str</span>, <span class="string">'&amp;'</span> );</span><br><span class="line"><span class="variable">$ch</span> = curl_init ();</span><br><span class="line"><span class="variable">$user_agent</span> = <span class="string">'Mozilla/5.0 (Windows; U;</span><br><span class="line">Windows NT 5.1; ru; rv:1.8.0.9) Gecko/20061206 Firefox/1.5.0.9'</span>;</span><br><span class="line"><span class="variable">$cookie_file</span>=tempnam(<span class="string">'temp'</span>,<span class="string">'cookie'</span>);</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_URL, <span class="string">"https://api.weibo.com/oauth2/authorize"</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_SSL_VERIFYPEER, <span class="number">0</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_SSL_VERIFYHOST, <span class="number">0</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_RETURNTRANSFER, <span class="number">1</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_FOLLOWLOCATION, <span class="number">1</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_REFERER, <span class="variable">$oauth_url</span> );</span><br><span class="line"><span class="comment">//curl_setopt ( $ch, CURLOPT_USERAGENT, $user_agent );</span></span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_POST, <span class="keyword">true</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_POSTFIELDS, <span class="variable">$postdata_str</span> );</span><br><span class="line"><span class="comment">//使用cookie传值</span></span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_COOKIE,<span class="string">'*******'</span>);<span class="comment">//*******填写你的cookies，如果选择用户名和密码登录则可以忽略</span></span><br><span class="line">curl_setopt(<span class="variable">$ch</span>,CURLOPT_COOKIEJAR,<span class="variable">$cookie_file</span>);</span><br><span class="line"><span class="variable">$response</span> = curl_exec(<span class="variable">$ch</span>);</span><br><span class="line"><span class="variable">$last_url</span> = curl_getinfo ( <span class="variable">$ch</span>, CURLINFO_EFFECTIVE_URL );</span><br><span class="line"><span class="comment">//$response = str_replace('/oauth2/','https://api.weibo.com/oauth2/',$response);</span></span><br><span class="line"><span class="comment">//print_r($response);</span></span><br><span class="line">print_r(<span class="variable">$_REQUEST</span>);</span><br></pre></td></tr></table></figure>
-<p>我们可以再输出中看到返回的access_token、uid等数据，并且查看该微博已经授权appkey对应的应用。这段代码其实没有什么很大作用，因为还不能自动授权，不过还可以制作自己的微博授权登录界面。如有问题可留言给我，记得留下你的邮箱方便回复。<br>本文参考<a href="http://hi.baidu.com/bing008ok/item/0a2bce068d1f8e0aeafe385d" target="_blank" rel="external">http://hi.baidu.com/bing008ok/item/0a2bce068d1f8e0aeafe385d</a></p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2013-08-text-similarity-algorithm" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/08/25/2013-08-text-similarity-algorithm/" class="article-date">
-  	<time datetime="2013-08-25T06:28:00.000Z" itemprop="datePublished">2013-08-25</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/08/25/2013-08-text-similarity-algorithm/">实现文本相似度算法（余弦定理）(转)</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>最近由于工作项目，需要判断两个txt文本是否相似，于是开始在网上找资料研究，因为在程序中会把文本转换成String再做比较，所以最开始找到了这篇关于 <a href="http://wdhdmx.iteye.com/blog/1343856" target="_blank" rel="external">距离编辑算法</a> Blog写的非常好，受益匪浅。</p>
-<p>于是我决定把它用到项目中，来判断两个文本的相似度。但后来实际操作发现有一些问题：直接说就是查询一本书中的相似章节花了我7、8分钟；这是我不能接受……</p>
-<p>于是停下来仔细分析发现，这种算法在此项目中不是特别适用，由于要判断一本书中是否有相同章节，所以每两个章节之间都要比较，若一本书书有x章的话，这里需对比x(x-1)/2次；而此算法采用矩阵的方式，计算两个字符串之间的变化步骤，会遍历两个文本中的每一个字符两两比较，可以推断出时间复杂度至少为document1.length × document2.length，我所比较的章节字数平均在几千～一万字；这样计算实在要了老命。</p>
-<p>想到Lucene中的评分机制，也是算一个相似度的问题，不过它采用的是计算向量间的夹角（余弦公式），在google黑板报中的：<a href="http://www.google.com.hk/ggblog/googlechinablog/2006/07/12_4010.html" target="_blank" rel="external">数学之美（余弦定理和新闻分类）</a> 也有说明，可以通过余弦定理来判断相似度；于是决定自己动手试试。</p>
-<p>首相选择向量的模型：在以字为向量还是以词为向量的问题上，纠结了一会；后来还是觉得用字，虽然词更为准确，但分词却需要增加额外的复杂度，并且此项目要求速度，准确率可以放低，于是还是选择字为向量。</p>
-<p>然后每个字在章节中出现的次数，便是以此字向量的值。现在我们假设：</p>
-<p>章节1中出现的字为：Z1c1,Z1c2,Z1c3,Z1c4……Z1cn；它们在章节中的个数为：Z1n1,Z1n2,Z1n3……Z1nm；</p>
-<p>章节2中出现的字为：Z2c1,Z2c2,Z2c3,Z2c4……Z2cn；它们在章节中的个数为：Z2n1,Z2n2,Z2n3……Z2nm；</p>
-<p>其中，Z1c1和Z2c1表示两个文本中同一个字，Z1n1和Z2n1是它们分别对应的个数，</p>
-<p>最后我们的相似度可以这么计算：<img src="http://static.oschina.net/uploads/space/2012/0304/163822_kpyP_100580.png" alt="公式"></p>
-<p>程序实现如下：（若有可优化或更好的实现请不吝赐教）</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CosineSimilarAlgorithm</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">double</span> <span class="title">getSimilarity</span><span class="params">(String doc1, String doc2)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (doc1 != <span class="keyword">null</span> &amp;&amp; doc1.trim().length() &gt; <span class="number">0</span> &amp;&amp; doc2 != <span class="keyword">null</span></span><br><span class="line">                &amp;&amp; doc2.trim().length() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            </span><br><span class="line">            Map&lt;Integer, <span class="keyword">int</span>[]&gt; AlgorithmMap = <span class="keyword">new</span> HashMap&lt;Integer, <span class="keyword">int</span>[]&gt;();</span><br><span class="line">            </span><br><span class="line">            <span class="comment">//将两个字符串中的中文字符以及出现的总数封装到，AlgorithmMap中</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; doc1.length(); i++) &#123;</span><br><span class="line">                <span class="keyword">char</span> d1 = doc1.charAt(i);</span><br><span class="line">                <span class="keyword">if</span>(isHanZi(d1))&#123;</span><br><span class="line">                    <span class="keyword">int</span> charIndex = getGB2312Id(d1);</span><br><span class="line">                    <span class="keyword">if</span>(charIndex != -<span class="number">1</span>)&#123;</span><br><span class="line">                        <span class="keyword">int</span>[] fq = AlgorithmMap.get(charIndex);</span><br><span class="line">                        <span class="keyword">if</span>(fq != <span class="keyword">null</span> &amp;&amp; fq.length == <span class="number">2</span>)&#123;</span><br><span class="line">                            fq[<span class="number">0</span>]++;</span><br><span class="line">                        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                            fq = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">2</span>];</span><br><span class="line">                            fq[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">                            fq[<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">                            AlgorithmMap.put(charIndex, fq);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; doc2.length(); i++) &#123;</span><br><span class="line">                <span class="keyword">char</span> d2 = doc2.charAt(i);</span><br><span class="line">                <span class="keyword">if</span>(isHanZi(d2))&#123;</span><br><span class="line">                    <span class="keyword">int</span> charIndex = getGB2312Id(d2);</span><br><span class="line">                    <span class="keyword">if</span>(charIndex != -<span class="number">1</span>)&#123;</span><br><span class="line">                        <span class="keyword">int</span>[] fq = AlgorithmMap.get(charIndex);</span><br><span class="line">                        <span class="keyword">if</span>(fq != <span class="keyword">null</span> &amp;&amp; fq.length == <span class="number">2</span>)&#123;</span><br><span class="line">                            fq[<span class="number">1</span>]++;</span><br><span class="line">                        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                            fq = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">2</span>];</span><br><span class="line">                            fq[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">                            fq[<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">                            AlgorithmMap.put(charIndex, fq);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            Iterator&lt;Integer&gt; iterator = AlgorithmMap.keySet().iterator();</span><br><span class="line">            <span class="keyword">double</span> sqdoc1 = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">double</span> sqdoc2 = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">double</span> denominator = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span>(iterator.hasNext())&#123;</span><br><span class="line">                <span class="keyword">int</span>[] c = AlgorithmMap.get(iterator.next());</span><br><span class="line">                denominator += c[<span class="number">0</span>]*c[<span class="number">1</span>];</span><br><span class="line">                sqdoc1 += c[<span class="number">0</span>]*c[<span class="number">0</span>];</span><br><span class="line">                sqdoc2 += c[<span class="number">1</span>]*c[<span class="number">1</span>];</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">return</span> denominator / Math.sqrt(sqdoc1*sqdoc2);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(</span><br><span class="line">                    <span class="string">" the Document is null or have not cahrs!!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isHanZi</span><span class="params">(<span class="keyword">char</span> ch)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 判断是否汉字</span></span><br><span class="line">        <span class="keyword">return</span> (ch &gt;= <span class="number">0x4E00</span> &amp;&amp; ch &lt;= <span class="number">0x9FA5</span>);</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/**</span><br><span class="line">     * 根据输入的Unicode字符，获取它的GB2312编码或者ascii编码，</span><br><span class="line">     *</span><br><span class="line">     * <span class="doctag">@param</span> ch</span><br><span class="line">     *            输入的GB2312中文字符或者ASCII字符(128个)</span><br><span class="line">     * <span class="doctag">@return</span> ch在GB2312中的位置，-1表示该字符不认识</span><br><span class="line">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">short</span> <span class="title">getGB2312Id</span><span class="params">(<span class="keyword">char</span> ch)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">byte</span>[] buffer = Character.toString(ch).getBytes(<span class="string">"GB2312"</span>);</span><br><span class="line">            <span class="keyword">if</span> (buffer.length != <span class="number">2</span>) &#123;</span><br><span class="line">                <span class="comment">// 正常情况下buffer应该是两个字节，否则说明ch不属于GB2312编码，故返回'?'，此时说明不认识该字符</span></span><br><span class="line">                <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">int</span> b0 = (<span class="keyword">int</span>) (buffer[<span class="number">0</span>] &amp; <span class="number">0x0FF</span>) - <span class="number">161</span>; <span class="comment">// 编码从A1开始，因此减去0xA1=161</span></span><br><span class="line">            <span class="keyword">int</span> b1 = (<span class="keyword">int</span>) (buffer[<span class="number">1</span>] &amp; <span class="number">0x0FF</span>) - <span class="number">161</span>; <span class="comment">// 第一个字符和最后一个字符没有汉字，因此每个区只收16*6-2=94个汉字</span></span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">short</span>) (b0 * <span class="number">94</span> + b1);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>程序中做了两小的改进，以加快效率：</p>
-<ol>
-<li>只将汉字作为向量，其他的如标点，数字等符号不处理；2. 在HashMap中存放汉字和其在文本中对于的个数时，先将单个汉字通过GB2312编码转换成数字，再存放。</li>
-</ol>
-<p>最后写了个测试，根据两种不同的算法对比下时间，下面是测试结果：</p>
-<p>余弦定理算法：doc1 与 doc2 相似度为：0.9954971, 耗时：22mm</p>
-<p>距离编辑算法：doc1 与 doc2 相似度为：0.99425095, 耗时：322mm</p>
-<p>可见效率有明显提高，算法复杂度大致为：document1.length + document2.length。</p>
-<p>blog转载于<a href="http://my.oschina.net/BreathL/blog/42477" target="_blank" rel="external">http://my.oschina.net/BreathL/blog/42477</a></p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a>
 	</div>
 
 

@@ -196,6 +196,311 @@
 </nav>
       <div class="body-wrap">
   
+    <article id="post-2013-09-csrf" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/09/03/2013-09-csrf/" class="article-date">
+  	<time datetime="2013-09-03T13:22:00.000Z" itemprop="datePublished">2013-09-03</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/09/03/2013-09-csrf/">浅谈CSRF攻击方式</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>一.CSRF是什么？</p>
+<p>　　CSRF（Cross-site request forgery），中文名称：跨站请求伪造，也被称为：one click attack/session riding，缩写为：CSRF/XSRF。</p>
+<p>二.CSRF可以做什么？</p>
+<p>你这可以这么理解CSRF攻击：攻击者盗用了你的身份，以你的名义发送恶意请求。CSRF能够做的事情包括：以你名义发送邮件，发消息，盗取你的账号，甚至于购买商品，虚拟货币转账……造成的问题包括：个人隐私泄露以及财产安全。</p>
+<p>三.CSRF漏洞现状</p>
+<p>CSRF这种攻击方式在2000年已经被国外的安全人员提出，但在国内，直到06年才开始被关注，08年，国内外的多个大型社区和交互网站分别爆出CSRF漏洞，如：NYTimes.com（纽约时报）、Metafilter（一个大型的BLOG网站），YouTube和百度HI……而现在，互联网上的许多站点仍对此毫无防备，以至于安全业界称CSRF为“沉睡的巨人”。</p>
+<p>四.CSRF的原理</p>
+<p>下图简单阐述了CSRF攻击的思想：</p>
+<p>￼</p>
+<p>从上图可以看出，要完成一次CSRF攻击，受害者必须依次完成两个步骤：</p>
+<p>1.登录受信任网站A，并在本地生成Cookie。</p>
+<p>2.在不登出A的情况下，访问危险网站B。</p>
+<p>看到这里，你也许会说：“如果我不满足以上两个条件中的一个，我就不会受到CSRF的攻击”。是的，确实如此，但你不能保证以下情况不会发生：</p>
+<p>1.你不能保证你登录了一个网站后，不再打开一个tab页面并访问另外的网站。</p>
+<p>2.你不能保证你关闭浏览器了后，你本地的Cookie立刻过期，你上次的会话已经结束。（事实上，关闭浏览器不能结束一个会话，但大多数人都会错误的认为关闭浏览器就等于退出登录/结束会话了……）</p>
+<p>3.上图中所谓的攻击网站，可能是一个存在其他漏洞的可信任的经常被人访问的网站。</p>
+<p>上面大概地讲了一下CSRF攻击的思想，下面我将用几个例子详细说说具体的CSRF攻击，这里我以一个银行转账的操作作为例子（仅仅是例子，真实的银行网站没这么傻:&gt;）</p>
+<p>　　示例1：</p>
+<p>银行网站A，它以GET请求来完成银行转账的操作，如：<a href="http://www.mybank.com/Transfer.php?toBankId=11&amp;money=1000" target="_blank" rel="external">http://www.mybank.com/Transfer.php?toBankId=11&amp;money=1000</a></p>
+<p>危险网站B，它里面有一段HTML的代码如下：</p>
+<p>　　<img src="http://www.mybank.com/Transfer.php?toBankId=11&money=1000"><br>首先，你登录了银行网站A，然后访问危险网站B，噢，这时你会发现你的银行账户少了1000块……</p>
+<p>为什么会这样呢？原因是银行网站A违反了HTTP规范，使用GET请求更新资源。在访问危险网站B的之前，你已经登录了银行网站A，而B中的图以GET的方式请求第三方资源（这里的第三方就是指银行网站了，原本这是一个合法的请求，但这里被不法分子利用了），所以你的浏览器会带上你的银行网站A的Cookie发出Get请求，去获取资源“<a href="http://www.mybank.com/Transfer.php?toBankId=11&amp;money=1000”，结果银行网站服务器收到请求后，认为这是一个更新资源操作（转账操作），所以就立刻进行转账操作" target="_blank" rel="external">http://www.mybank.com/Transfer.php?toBankId=11&amp;money=1000”，结果银行网站服务器收到请求后，认为这是一个更新资源操作（转账操作），所以就立刻进行转账操作</a>……</p>
+<p>示例2：</p>
+<p>为了杜绝上面的问题，银行决定改用POST请求完成转账操作。</p>
+<p>银行网站A的WEB表单如下：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">form action="Transfer.php" method="POST"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">p</span>&gt;</span>ToBankId: <span class="tag">&lt;<span class="title">input type="text" name="toBankId" </span>/&gt;</span><span class="tag">&lt;/<span class="title">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">p</span>&gt;</span>Money: <span class="tag">&lt;<span class="title">input type="text" name="money" </span>/&gt;</span><span class="tag">&lt;/<span class="title">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">p</span>&gt;</span><span class="tag">&lt;<span class="title">input type="submit" value="Transfer" </span>/&gt;</span><span class="tag">&lt;/<span class="title">p</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>后台处理页面Transfer.php如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$_REQUEST</span>[<span class="string">'toBankId'</span>] &amp;&amp;　<span class="keyword">isset</span>(<span class="variable">$_REQUEST</span>[<span class="string">'money'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">    buy_stocks(<span class="variable">$_REQUEST</span>[<span class="string">'toBankId'</span>],　<span class="variable">$_REQUEST</span>[<span class="string">'money'</span>]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>危险网站B，仍然只是包含那句HTML代码：</p>
+<p>　　<img src="http://www.mybank.com/Transfer.php?toBankId=11&money=1000"><br>和示例1中的操作一样，你首先登录了银行网站A，然后访问危险网站B，结果…..和示例1一样，你再次没了1000块～T_T，这次事故的原因是：银行后台使用了$_REQUEST去获取请求的数据，而$_REQUEST既可以获取GET请求的数据，也可以获取POST请求的数据，这就造成了在后台处理程序无法区分这到底是GET请求的数据还是POST请求的数据。在PHP中，可以使用$_GET和$_POST分别获取GET请求和POST请求的数据。在JAVA中，用于获取请求数据request一样存在不能区分GET请求数据和POST数据的问题。</p>
+<p>示例3：</p>
+<p>经过前面2个惨痛的教训，银行决定把获取请求数据的方法也改了，改用$_POST，只获取POST请求的数据，后台处理页面Transfer.php代码如下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">if</span> (<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">'toBankId'</span>] &amp;&amp;　<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">'money'</span>]))</span><br><span class="line">&#123;</span><br><span class="line">    buy_stocks(<span class="variable">$_POST</span>[<span class="string">'toBankId'</span>],　<span class="variable">$_POST</span>[<span class="string">'money'</span>]);</span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然而，危险网站B与时俱进，它改了一下代码：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="title">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">script</span> <span class="attribute">type</span>=<span class="value">"text/javascript"</span>&gt;</span><span class="javascript"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">steal</span>(<span class="params"></span>)</span><br><span class="line"></span>&#123;</span><br><span class="line">iframe = <span class="built_in">document</span>.frames[<span class="string">"steal"</span>];</span><br><span class="line">iframe.document.Submit(<span class="string">"transfer"</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><span class="tag">&lt;/<span class="title">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">head</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="title">body onload="steal()"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">iframe name="steal" display="none"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">form method="POST" name="transfer"　action="http:</span>//<span class="attribute">www.myBank.com</span>/<span class="attribute">Transfer.php</span>"&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type="hidden" name="toBankId" value="11"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type="hidden" name="money" value="1000"</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">form</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">iframe</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>如果用户仍是继续上面的操作，很不幸，结果将会是再次不见1000块……因为这里危险网站B暗地里发送了POST请求到银行!</p>
+<p>总结一下上面3个例子，CSRF主要的攻击模式基本上是以上的3种，其中以第1,2种最为严重，因为触发条件很简单，一个就可以了，而第3种比较麻烦，需要使用JavaScript，所以使用的机会会比前面的少很多，但无论是哪种情况，只要触发了CSRF攻击，后果都有可能很严重。</p>
+<p>理解上面的3种攻击模式，其实可以看出，CSRF攻击是源于WEB的隐式身份验证机制！WEB的身份验证机制虽然可以保证一个请求是来自于某个用户的浏览器，但却无法保证该请求是用户批准发送的！</p>
+<p>五.CSRF的防御</p>
+<p>我总结了一下看到的资料，CSRF的防御可以从服务端和客户端两方面着手，防御效果是从服务端着手效果比较好，现在一般的CSRF防御也都在服务端进行。</p>
+<p>1.服务端进行CSRF防御</p>
+<p>服务端的CSRF方式方法很多样，但总的思想都是一致的，就是在客户端页面增加伪随机数。</p>
+<p>(1).Cookie Hashing(所有表单都包含同一个伪随机值)：</p>
+<p>这可能是最简单的解决方案了，因为攻击者不能获得第三方的Cookie(理论上)，所以表单中的数据也就构造失败了:&gt;</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">　　<span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="comment">//构造加密的Cookie信息</span></span><br><span class="line"><span class="variable">$value </span>= “DefenseSCRF”;</span><br><span class="line">setcookie(”cookie”, <span class="variable">$value</span>, time()+<span class="number">3600</span>);</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>在表单里增加Hash值，以认证这确实是用户发送的请求。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="php"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="variable">$hash </span>= md5(<span class="variable">$_COOKIE</span>[<span class="string">'cookie'</span>]);</span><br><span class="line"><span class="preprocessor">?&gt;</span></span></span><br><span class="line"><span class="tag">&lt;<span class="title">form method=”POST” action=”transfer.php”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”text” name=”toBankId”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”text” name=”money”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”hidden” name=”hash” value=”</span><span class="php"><span class="preprocessor">&lt;?</span>=<span class="variable">$hash</span>;<span class="preprocessor">?&gt;</span></span>”&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”submit” name=”submit” value=”Submit”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">form</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然后在服务器端进行Hash值验证</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$_POST</span>[<span class="string">'check'</span>])) &#123;</span><br><span class="line"><span class="variable">$hash </span>= md5(<span class="variable">$_COOKIE</span>[<span class="string">'cookie'</span>]);</span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$_POST</span>[<span class="string">'check'</span>] == <span class="variable">$hash</span>) &#123;</span><br><span class="line">doJob();</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"><span class="comment">//...</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>这个方法个人觉得已经可以杜绝99%的CSRF攻击了，那还有1%呢….由于用户的Cookie很容易由于网站的XSS漏洞而被盗取，这就另外的1%。一般的攻击者看到有需要算Hash值，基本都会放弃了，某些除外，所以如果需要100%的杜绝，这个不是最好的方法。<br>(2).验证码</p>
+<p>这个方案的思路是：每次的用户提交都需要用户在表单中填写一个图片上的随机字符串，厄….这个方案可以完全解决CSRF，但个人觉得在易用性方面似乎不是太好，还有听闻是验证码图片的使用涉及了一个被称为MHTML的Bug，可能在某些版本的微软IE中受影响。</p>
+<p>(3).One-Time Tokens(不同的表单包含一个不同的伪随机值)</p>
+<p>在实现One-Time Tokens时，需要注意一点：就是“并行会话的兼容”。如果用户在一个站点上同时打开了两个不同的表单，CSRF保护措施不应该影响到他对任何表单的提交。考虑一下如果每次表单被装入时站点生成一个伪随机值来覆盖以前的伪随机值将会发生什么情况：用户只能成功地提交他最后打开的表单，因为所有其他的表单都含有非法的伪随机值。必须小心操作以确保CSRF保护措施不会影响选项卡式的浏览或者利用多个浏览器窗口浏览一个站点。</p>
+<p>以下我的实现:</p>
+<p>1).先是令牌生成函数(gen_token())：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">gen_token</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="comment">//这里我是贪方便，实际上单使用Rand()得出的随机数作为令牌，也是不安全的。</span></span><br><span class="line"><span class="comment">//这个可以参考我写的Findbugs笔记中的《Random object created and used only once》</span></span><br><span class="line"><span class="variable">$token </span>= md5(uniqid(rand(), <span class="keyword">true</span>));</span><br><span class="line"><span class="keyword">return</span> <span class="variable">$token</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>2).然后是Session令牌生成函数(gen_stoken())：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">gen_stoken</span><span class="params">()</span> </span>&#123;</span><br><span class="line"><span class="variable">$pToken</span> = <span class="string">""</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$_SESSION</span>[STOKEN_NAME]  == <span class="variable">$pToken</span>)&#123;</span><br><span class="line"><span class="comment">//没有值，赋新值</span></span><br><span class="line"><span class="variable">$_SESSION</span>[STOKEN_NAME] = gen_token();</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">else</span>&#123;</span><br><span class="line"><span class="comment">//继续使用旧的值</span></span><br><span class="line">&#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>3).WEB表单生成隐藏输入域的函数：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">gen_input</span><span class="params">()</span> </span>&#123;</span><br><span class="line">gen_stoken();</span><br><span class="line"><span class="keyword">echo</span> “&lt;input type=\”hidden\” name=\”<span class="string">" . FTOKEN_NAME . “\”</span><br><span class="line">value=\”"</span> . <span class="variable">$_SESSION</span>[STOKEN_NAME] . “\”&gt; “;</span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>4).WEB表单结构：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="php"><span class="preprocessor">&lt;?php</span></span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">include</span>(”functions.php”);</span><br><span class="line"><span class="preprocessor">?&gt;</span></span></span><br><span class="line"><span class="tag">&lt;<span class="title">form method=”POST” action=”transfer.php”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”text” name=”toBankId”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”text” name=”money”</span>&gt;</span></span><br><span class="line"><span class="php"><span class="preprocessor">&lt;?</span> gen_input(); <span class="preprocessor">?&gt;</span></span></span><br><span class="line"><span class="tag">&lt;<span class="title">input type=”submit” name=”submit” value=”Submit”</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="title">FORM</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>5).服务端核对令牌：</p>
+<p>这个很简单，这里就不再啰嗦了。</p>
+<p>上面这个其实不完全符合“并行会话的兼容”的规则，大家可以在此基础上修改。</p>
+<p>转载请说明出处，谢谢[hyddd(<a href="http://www.cnblogs.com/hyddd/" target="_blank" rel="external">http://www.cnblogs.com/hyddd/</a>)]</p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/转载/">转载</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2013-08-parse_str&amp;http_build_query" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/08/29/2013-08-parse_str&http_build_query/" class="article-date">
+  	<time datetime="2013-08-29T04:03:00.000Z" itemprop="datePublished">2013-08-29</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/08/29/2013-08-parse_str&http_build_query/">URL处理的两个关键PHP函数parse_str与http_build_query</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>简单的理解这两个函数</p>
+<p>parse_str就是将一个url ?后面的参数转换成一个数组</p>
+<p>array parse_str(url,arr)</p>
+<p>http_build_query就是将一个数组转换成url ?后面的参数字符串，会自动进行urlencode处理</p>
+<p>string http_build_query ( array formdata [, string numeric_prefix])</p>
+<p>后面的给数组中没有指定键或者键为数字的加下标</p>
+<p>我们知道, PHP的 parse_str() 函数可以将 URL Query 格式的字符串解析成关联数组, 与PHP生成 $_GET 使用的相同的策略. parse_str() 的”反函数”是 http_build_query(), 它将关联数组和对象生成 URL Query 字符串. 不过, 只在PHP5之后才被支持. 所以, 我们需要编写自己的 http_build_query()</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">my_http_build_query</span><span class="params">(<span class="variable">$data</span>)</span> </span>&#123;</span><br><span class="line">    <span class="variable">$str</span> = <span class="string">''</span>;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$data</span> <span class="keyword">as</span> <span class="variable">$key</span> = &gt;<span class="variable">$value</span>) &#123;</span><br><span class="line">        <span class="keyword">foreach</span>(child_str(<span class="variable">$value</span>) <span class="keyword">as</span> <span class="variable">$v</span>) &#123;</span><br><span class="line">            <span class="variable">$str</span>. = <span class="string">"$key$v&amp;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> substr(<span class="variable">$str</span>, <span class="number">0</span>, strlen(<span class="variable">$str</span>) - <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">child_str</span><span class="params">(<span class="variable">$data</span>)</span> </span>&#123;</span><br><span class="line">    <span class="variable">$str</span> = <span class="keyword">array</span>();</span><br><span class="line">    <span class="keyword">if</span> (is_array(<span class="variable">$data</span>)) &#123;</span><br><span class="line">        <span class="keyword">foreach</span>(<span class="variable">$data</span> <span class="keyword">as</span> <span class="variable">$key</span> = &gt;<span class="variable">$value</span>) &#123;</span><br><span class="line">            <span class="keyword">foreach</span>(child_str(<span class="variable">$value</span>) <span class="keyword">as</span> <span class="variable">$v</span>) &#123;</span><br><span class="line">                <span class="variable">$str</span>[] = <span class="string">"[$key]$v"</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// do url encoding here</span></span><br><span class="line">        <span class="variable">$data</span> = str_replace(<span class="string">'&amp;'</span>, <span class="string">'%26'</span>, <span class="string">'='</span>.<span class="variable">$data</span>);</span><br><span class="line">        <span class="variable">$str</span>[] = <span class="variable">$data</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$str</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2013-08-php-oauth2-access_token" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/08/25/2013-08-php-oauth2-access_token/" class="article-date">
+  	<time datetime="2013-08-25T08:18:00.000Z" itemprop="datePublished">2013-08-25</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/08/25/2013-08-php-oauth2-access_token/">php 模拟新浪微博oauth2.0授权获取access_token （跳过授权页）（改）</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?</span></span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">require_once</span> <span class="string">'sina/saetv2.ex.class.php'</span>;</span><br><span class="line"><span class="variable">$o</span> = <span class="keyword">new</span> SaeTOAuthV2 ( WB_AKEY, WB_SKEY);</span><br><span class="line"><span class="variable">$oauth_url</span> = <span class="variable">$o</span>-&gt;getAuthorizeURL (WB_CALLBACK_URL);</span><br><span class="line"><span class="comment">/*</span><br><span class="line">* 要提交的数据</span><br><span class="line">*</span><br><span class="line">*/</span></span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'client_id'</span>] = WB_AKEY;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'response_type'</span>] = <span class="string">'code'</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'redirect_uri'</span>] = urlencode(WB_CALLBACK_URL);</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'action'</span>] = <span class="string">'submit'</span>;</span><br><span class="line"><span class="comment">//$postdata ['userId'] = '用户名';//如果选择cookies登录可不填用户名和密码</span></span><br><span class="line"><span class="comment">//$postdata ['passwd'] = '密码';</span></span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'isLoginSina'</span>] = <span class="number">0</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'from'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'regCallback'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'state'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'ticket'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'withOfficalFlag'</span>] = <span class="number">0</span>;</span><br><span class="line"><span class="comment">//把提交的数据拼接字符串</span></span><br><span class="line"><span class="variable">$postdata_str</span> = <span class="string">''</span>;</span><br><span class="line"><span class="keyword">foreach</span> ( <span class="variable">$postdata</span> <span class="keyword">as</span> <span class="variable">$dk</span> =&gt; <span class="variable">$dv</span> ) &#123;</span><br><span class="line"><span class="variable">$postdata_str</span> .= <span class="variable">$dk</span> . <span class="string">'='</span> . (<span class="variable">$dv</span>) . <span class="string">"&amp;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$postdata_str</span> = trim ( <span class="variable">$postdata_str</span>, <span class="string">'&amp;'</span> );</span><br><span class="line"><span class="variable">$ch</span> = curl_init ();</span><br><span class="line"><span class="variable">$user_agent</span> = <span class="string">'Mozilla/5.0 (Windows; U;</span><br><span class="line">Windows NT 5.1; ru; rv:1.8.0.9) Gecko/20061206 Firefox/1.5.0.9'</span>;</span><br><span class="line"><span class="variable">$cookie_file</span>=tempnam(<span class="string">'temp'</span>,<span class="string">'cookie'</span>);</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_URL, <span class="string">"https://api.weibo.com/oauth2/authorize"</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_SSL_VERIFYPEER, <span class="number">0</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_SSL_VERIFYHOST, <span class="number">0</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_RETURNTRANSFER, <span class="number">1</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_FOLLOWLOCATION, <span class="number">1</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_REFERER, <span class="variable">$oauth_url</span> );</span><br><span class="line"><span class="comment">//curl_setopt ( $ch, CURLOPT_USERAGENT, $user_agent );</span></span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_POST, <span class="keyword">true</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_POSTFIELDS, <span class="variable">$postdata_str</span> );</span><br><span class="line"><span class="comment">//使用cookie传值</span></span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_COOKIE,<span class="string">'*******'</span>);<span class="comment">//*******填写你的cookies，如果选择用户名和密码登录则可以忽略</span></span><br><span class="line">curl_setopt(<span class="variable">$ch</span>,CURLOPT_COOKIEJAR,<span class="variable">$cookie_file</span>);</span><br><span class="line"><span class="variable">$response</span> = curl_exec(<span class="variable">$ch</span>);</span><br><span class="line"><span class="variable">$last_url</span> = curl_getinfo ( <span class="variable">$ch</span>, CURLINFO_EFFECTIVE_URL );</span><br><span class="line"><span class="comment">//$response = str_replace('/oauth2/','https://api.weibo.com/oauth2/',$response);</span></span><br><span class="line"><span class="comment">//print_r($response);</span></span><br><span class="line">print_r(<span class="variable">$_REQUEST</span>);</span><br></pre></td></tr></table></figure>
+<p>我们可以再输出中看到返回的access_token、uid等数据，并且查看该微博已经授权appkey对应的应用。这段代码其实没有什么很大作用，因为还不能自动授权，不过还可以制作自己的微博授权登录界面。如有问题可留言给我，记得留下你的邮箱方便回复。<br>本文参考<a href="http://hi.baidu.com/bing008ok/item/0a2bce068d1f8e0aeafe385d" target="_blank" rel="external">http://hi.baidu.com/bing008ok/item/0a2bce068d1f8e0aeafe385d</a></p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2013-08-text-similarity-algorithm" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/08/25/2013-08-text-similarity-algorithm/" class="article-date">
+  	<time datetime="2013-08-25T06:28:00.000Z" itemprop="datePublished">2013-08-25</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/08/25/2013-08-text-similarity-algorithm/">实现文本相似度算法（余弦定理）(转)</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>最近由于工作项目，需要判断两个txt文本是否相似，于是开始在网上找资料研究，因为在程序中会把文本转换成String再做比较，所以最开始找到了这篇关于 <a href="http://wdhdmx.iteye.com/blog/1343856" target="_blank" rel="external">距离编辑算法</a> Blog写的非常好，受益匪浅。</p>
+<p>于是我决定把它用到项目中，来判断两个文本的相似度。但后来实际操作发现有一些问题：直接说就是查询一本书中的相似章节花了我7、8分钟；这是我不能接受……</p>
+<p>于是停下来仔细分析发现，这种算法在此项目中不是特别适用，由于要判断一本书中是否有相同章节，所以每两个章节之间都要比较，若一本书书有x章的话，这里需对比x(x-1)/2次；而此算法采用矩阵的方式，计算两个字符串之间的变化步骤，会遍历两个文本中的每一个字符两两比较，可以推断出时间复杂度至少为document1.length × document2.length，我所比较的章节字数平均在几千～一万字；这样计算实在要了老命。</p>
+<p>想到Lucene中的评分机制，也是算一个相似度的问题，不过它采用的是计算向量间的夹角（余弦公式），在google黑板报中的：<a href="http://www.google.com.hk/ggblog/googlechinablog/2006/07/12_4010.html" target="_blank" rel="external">数学之美（余弦定理和新闻分类）</a> 也有说明，可以通过余弦定理来判断相似度；于是决定自己动手试试。</p>
+<p>首相选择向量的模型：在以字为向量还是以词为向量的问题上，纠结了一会；后来还是觉得用字，虽然词更为准确，但分词却需要增加额外的复杂度，并且此项目要求速度，准确率可以放低，于是还是选择字为向量。</p>
+<p>然后每个字在章节中出现的次数，便是以此字向量的值。现在我们假设：</p>
+<p>章节1中出现的字为：Z1c1,Z1c2,Z1c3,Z1c4……Z1cn；它们在章节中的个数为：Z1n1,Z1n2,Z1n3……Z1nm；</p>
+<p>章节2中出现的字为：Z2c1,Z2c2,Z2c3,Z2c4……Z2cn；它们在章节中的个数为：Z2n1,Z2n2,Z2n3……Z2nm；</p>
+<p>其中，Z1c1和Z2c1表示两个文本中同一个字，Z1n1和Z2n1是它们分别对应的个数，</p>
+<p>最后我们的相似度可以这么计算：<img src="http://static.oschina.net/uploads/space/2012/0304/163822_kpyP_100580.png" alt="公式"></p>
+<p>程序实现如下：（若有可优化或更好的实现请不吝赐教）</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CosineSimilarAlgorithm</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">double</span> <span class="title">getSimilarity</span><span class="params">(String doc1, String doc2)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (doc1 != <span class="keyword">null</span> &amp;&amp; doc1.trim().length() &gt; <span class="number">0</span> &amp;&amp; doc2 != <span class="keyword">null</span></span><br><span class="line">                &amp;&amp; doc2.trim().length() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            </span><br><span class="line">            Map&lt;Integer, <span class="keyword">int</span>[]&gt; AlgorithmMap = <span class="keyword">new</span> HashMap&lt;Integer, <span class="keyword">int</span>[]&gt;();</span><br><span class="line">            </span><br><span class="line">            <span class="comment">//将两个字符串中的中文字符以及出现的总数封装到，AlgorithmMap中</span></span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; doc1.length(); i++) &#123;</span><br><span class="line">                <span class="keyword">char</span> d1 = doc1.charAt(i);</span><br><span class="line">                <span class="keyword">if</span>(isHanZi(d1))&#123;</span><br><span class="line">                    <span class="keyword">int</span> charIndex = getGB2312Id(d1);</span><br><span class="line">                    <span class="keyword">if</span>(charIndex != -<span class="number">1</span>)&#123;</span><br><span class="line">                        <span class="keyword">int</span>[] fq = AlgorithmMap.get(charIndex);</span><br><span class="line">                        <span class="keyword">if</span>(fq != <span class="keyword">null</span> &amp;&amp; fq.length == <span class="number">2</span>)&#123;</span><br><span class="line">                            fq[<span class="number">0</span>]++;</span><br><span class="line">                        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                            fq = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">2</span>];</span><br><span class="line">                            fq[<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">                            fq[<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">                            AlgorithmMap.put(charIndex, fq);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"> </span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; doc2.length(); i++) &#123;</span><br><span class="line">                <span class="keyword">char</span> d2 = doc2.charAt(i);</span><br><span class="line">                <span class="keyword">if</span>(isHanZi(d2))&#123;</span><br><span class="line">                    <span class="keyword">int</span> charIndex = getGB2312Id(d2);</span><br><span class="line">                    <span class="keyword">if</span>(charIndex != -<span class="number">1</span>)&#123;</span><br><span class="line">                        <span class="keyword">int</span>[] fq = AlgorithmMap.get(charIndex);</span><br><span class="line">                        <span class="keyword">if</span>(fq != <span class="keyword">null</span> &amp;&amp; fq.length == <span class="number">2</span>)&#123;</span><br><span class="line">                            fq[<span class="number">1</span>]++;</span><br><span class="line">                        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">                            fq = <span class="keyword">new</span> <span class="keyword">int</span>[<span class="number">2</span>];</span><br><span class="line">                            fq[<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">                            fq[<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">                            AlgorithmMap.put(charIndex, fq);</span><br><span class="line">                        &#125;</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            Iterator&lt;Integer&gt; iterator = AlgorithmMap.keySet().iterator();</span><br><span class="line">            <span class="keyword">double</span> sqdoc1 = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">double</span> sqdoc2 = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">double</span> denominator = <span class="number">0</span>;</span><br><span class="line">            <span class="keyword">while</span>(iterator.hasNext())&#123;</span><br><span class="line">                <span class="keyword">int</span>[] c = AlgorithmMap.get(iterator.next());</span><br><span class="line">                denominator += c[<span class="number">0</span>]*c[<span class="number">1</span>];</span><br><span class="line">                sqdoc1 += c[<span class="number">0</span>]*c[<span class="number">0</span>];</span><br><span class="line">                sqdoc2 += c[<span class="number">1</span>]*c[<span class="number">1</span>];</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">            <span class="keyword">return</span> denominator / Math.sqrt(sqdoc1*sqdoc2);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException(</span><br><span class="line">                    <span class="string">" the Document is null or have not cahrs!!"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">boolean</span> <span class="title">isHanZi</span><span class="params">(<span class="keyword">char</span> ch)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 判断是否汉字</span></span><br><span class="line">        <span class="keyword">return</span> (ch &gt;= <span class="number">0x4E00</span> &amp;&amp; ch &lt;= <span class="number">0x9FA5</span>);</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br><span class="line"> </span><br><span class="line">    <span class="comment">/**</span><br><span class="line">     * 根据输入的Unicode字符，获取它的GB2312编码或者ascii编码，</span><br><span class="line">     *</span><br><span class="line">     * <span class="doctag">@param</span> ch</span><br><span class="line">     *            输入的GB2312中文字符或者ASCII字符(128个)</span><br><span class="line">     * <span class="doctag">@return</span> ch在GB2312中的位置，-1表示该字符不认识</span><br><span class="line">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">short</span> <span class="title">getGB2312Id</span><span class="params">(<span class="keyword">char</span> ch)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">byte</span>[] buffer = Character.toString(ch).getBytes(<span class="string">"GB2312"</span>);</span><br><span class="line">            <span class="keyword">if</span> (buffer.length != <span class="number">2</span>) &#123;</span><br><span class="line">                <span class="comment">// 正常情况下buffer应该是两个字节，否则说明ch不属于GB2312编码，故返回'?'，此时说明不认识该字符</span></span><br><span class="line">                <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">int</span> b0 = (<span class="keyword">int</span>) (buffer[<span class="number">0</span>] &amp; <span class="number">0x0FF</span>) - <span class="number">161</span>; <span class="comment">// 编码从A1开始，因此减去0xA1=161</span></span><br><span class="line">            <span class="keyword">int</span> b1 = (<span class="keyword">int</span>) (buffer[<span class="number">1</span>] &amp; <span class="number">0x0FF</span>) - <span class="number">161</span>; <span class="comment">// 第一个字符和最后一个字符没有汉字，因此每个区只收16*6-2=94个汉字</span></span><br><span class="line">            <span class="keyword">return</span> (<span class="keyword">short</span>) (b0 * <span class="number">94</span> + b1);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (UnsupportedEncodingException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>程序中做了两小的改进，以加快效率：</p>
+<ol>
+<li>只将汉字作为向量，其他的如标点，数字等符号不处理；2. 在HashMap中存放汉字和其在文本中对于的个数时，先将单个汉字通过GB2312编码转换成数字，再存放。</li>
+</ol>
+<p>最后写了个测试，根据两种不同的算法对比下时间，下面是测试结果：</p>
+<p>余弦定理算法：doc1 与 doc2 相似度为：0.9954971, 耗时：22mm</p>
+<p>距离编辑算法：doc1 与 doc2 相似度为：0.99425095, 耗时：322mm</p>
+<p>可见效率有明显提高，算法复杂度大致为：document1.length + document2.length。</p>
+<p>blog转载于<a href="http://my.oschina.net/BreathL/blog/42477" target="_blank" rel="external">http://my.oschina.net/BreathL/blog/42477</a></p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/转载/">转载</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
     <article id="post-2013-08-first-day" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
