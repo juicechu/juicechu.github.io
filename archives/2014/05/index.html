@@ -307,6 +307,68 @@
 
 
   
+    <article id="post-2014-05-linux-xiaomi-wifi-driver" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2014/05/24/2014-05-linux-xiaomi-wifi-driver/" class="article-date">
+  	<time datetime="2014-05-24T15:50:00.000Z" itemprop="datePublished">2014-05-24</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/24/2014-05-linux-xiaomi-wifi-driver/">linux下安装小米随身wifi的驱动，用来开启无线网卡功能</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>随身wifi这东西说白了都是无线网卡，就是厂商改了pid让你系统不能自动识别加载驱动。导致只能用他的软件只能用来当AP。可恨的是从来不考虑linux下使用的情况，只能自己动手。<br>其实找到芯片就可以了。安装芯片厂商的驱动。<br>我手头有个小米wifi，其实买来好玩，基本从来不用。说实话弱爆了。插在usb口突出那么多，比之之前我买的tplink的无线网卡大多了。</p>
+<p>小米的芯片也是ralink的MT7601U，去官网下载最新linux驱动就可以了。<br>只是在修改common/rtusb_dev_id.c文件时，请添加小米wifi的pid<br>{USB_DEVICE(0x2717,0x4106)},<br>然后<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">make</span><br><span class="line">make install</span><br><span class="line">modprobe mt7601Usta</span><br></pre></td></tr></table></figure></p>
+<p>就行了。</p>
+<p>再更新：<br>ubuntu升级为了14.04，但是发现怎么小米 wifi 驱动用不了，编译驱动发现报错，原来驱动不兼容，所以查了查资料参考<a href="http://blog.csdn.net/michaelbaker/article/details/23597741" target="_blank" rel="external">http://blog.csdn.net/michaelbaker/article/details/23597741</a><br>但是这位作者中间可能笔误写错了两行。<br>在前面修改PID之后，修改驱动代码里的/os/linux/rt_linux.c 的1211行和1222行的<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">            pOSFSInfo-&gt;fsuid = current_fsuid();</span><br><span class="line">                pOSFSInfo-&gt;fsgid = current_fsgid();</span><br></pre></td></tr></table></figure></p>
+<p>把他们两个改为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pOSFSInfo-&gt;fsuid = *(<span class="keyword">int</span> *)&amp;current_fsuid();</span><br><span class="line"></span><br><span class="line">pOSFSInfo-&gt;fsgid = *(<span class="keyword">int</span> *)&amp;current_fsgid();</span><br></pre></td></tr></table></figure>
+<p>似乎是这两个变量在新的系统里返回值不是整型的缘故(?)</p>
+<p>然后按原来步骤在14.04下就能正常了。</p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/Linux/">Linux</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
     <article id="post-2014-05-linux-grub-repair" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -362,11 +424,11 @@
 
 
   
-    <article id="post-2014-05-linux-xiaomi-wifi-driver" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2014-05-codeigniter-email-ssl" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2014/05/24/2014-05-linux-xiaomi-wifi-driver/" class="article-date">
-  	<time datetime="2014-05-24T15:50:00.000Z" itemprop="datePublished">2014-05-24</time>
+      <a href="/2014/05/24/2014-05-codeigniter-email-ssl/" class="article-date">
+  	<time datetime="2014-05-24T15:47:00.000Z" itemprop="datePublished">2014-05-24</time>
 </a>
     </div>
   
@@ -379,7 +441,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/24/2014-05-linux-xiaomi-wifi-driver/">linux下安装小米随身wifi的驱动，用来开启无线网卡功能</a>
+      <a class="article-title" href="/2014/05/24/2014-05-codeigniter-email-ssl/">使用fastcgi_finish_request提高页面响应速度</a>
     </h1>
   
 
@@ -388,14 +450,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>随身wifi这东西说白了都是无线网卡，就是厂商改了pid让你系统不能自动识别加载驱动。导致只能用他的软件只能用来当AP。可恨的是从来不考虑linux下使用的情况，只能自己动手。<br>其实找到芯片就可以了。安装芯片厂商的驱动。<br>我手头有个小米wifi，其实买来好玩，基本从来不用。说实话弱爆了。插在usb口突出那么多，比之之前我买的tplink的无线网卡大多了。</p>
-<p>小米的芯片也是ralink的MT7601U，去官网下载最新linux驱动就可以了。<br>只是在修改common/rtusb_dev_id.c文件时，请添加小米wifi的pid<br>{USB_DEVICE(0x2717,0x4106)},<br>然后<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">make</span><br><span class="line">make install</span><br><span class="line">modprobe mt7601Usta</span><br></pre></td></tr></table></figure></p>
-<p>就行了。</p>
-<p>再更新：<br>ubuntu升级为了14.04，但是发现怎么小米 wifi 驱动用不了，编译驱动发现报错，原来驱动不兼容，所以查了查资料参考<a href="http://blog.csdn.net/michaelbaker/article/details/23597741" target="_blank" rel="external">http://blog.csdn.net/michaelbaker/article/details/23597741</a><br>但是这位作者中间可能笔误写错了两行。<br>在前面修改PID之后，修改驱动代码里的/os/linux/rt_linux.c 的1211行和1222行的<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">            pOSFSInfo-&gt;fsuid = current_fsuid();</span><br><span class="line">                pOSFSInfo-&gt;fsgid = current_fsgid();</span><br></pre></td></tr></table></figure></p>
-<p>把他们两个改为</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pOSFSInfo-&gt;fsuid = *(<span class="keyword">int</span> *)&amp;current_fsuid();</span><br><span class="line"></span><br><span class="line">pOSFSInfo-&gt;fsgid = *(<span class="keyword">int</span> *)&amp;current_fsgid();</span><br></pre></td></tr></table></figure>
-<p>似乎是这两个变量在新的系统里返回值不是整型的缘故(?)</p>
-<p>然后按原来步骤在14.04下就能正常了。</p>
+        <p>CI的email类是支持SSL加密的，只要设置 $config[‘smtp_crypto’] = ‘ssl’; 就行了，官方文档上面没有写这个，太坑了。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$config</span>[<span class="string">'protocol'</span>] = <span class="string">'smtp'</span>;<span class="comment">// mail, sendmail, or smtp</span></span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_host'</span>] = <span class="string">'smtp.163.com'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_user'</span>] = <span class="string">'XXX@163.com'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_pass'</span>] = <span class="string">'XXX'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_port'</span>] = <span class="string">'465'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_crypto'</span>] = <span class="string">'ssl'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'charset'</span>] = <span class="string">'UTF-8'</span>;<span class="comment">// 默认UTF-8</span></span><br><span class="line"><span class="variable">$config</span>[<span class="string">'wordwrap'</span>] = <span class="keyword">true</span>;<span class="comment">//自动换行</span></span><br></pre></td></tr></table></figure></p>
+<p>done!</p>
 
       
     </div>
@@ -405,7 +461,7 @@
       
       
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/Linux/">Linux</a>
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/PHP/">PHP</a>
 	</div>
 
 
@@ -503,62 +559,6 @@
       
 	<div class="article-category tagcloud">
 	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/Linux/">Linux</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2014-05-codeigniter-email-ssl" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2014/05/24/2014-05-codeigniter-email-ssl/" class="article-date">
-  	<time datetime="2014-05-24T15:47:00.000Z" itemprop="datePublished">2014-05-24</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/24/2014-05-codeigniter-email-ssl/">使用fastcgi_finish_request提高页面响应速度</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>CI的email类是支持SSL加密的，只要设置 $config[‘smtp_crypto’] = ‘ssl’; 就行了，官方文档上面没有写这个，太坑了。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$config</span>[<span class="string">'protocol'</span>] = <span class="string">'smtp'</span>;<span class="comment">// mail, sendmail, or smtp</span></span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_host'</span>] = <span class="string">'smtp.163.com'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_user'</span>] = <span class="string">'XXX@163.com'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_pass'</span>] = <span class="string">'XXX'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_port'</span>] = <span class="string">'465'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_crypto'</span>] = <span class="string">'ssl'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'charset'</span>] = <span class="string">'UTF-8'</span>;<span class="comment">// 默认UTF-8</span></span><br><span class="line"><span class="variable">$config</span>[<span class="string">'wordwrap'</span>] = <span class="keyword">true</span>;<span class="comment">//自动换行</span></span><br></pre></td></tr></table></figure></p>
-<p>done!</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/PHP/">PHP</a>
 	</div>
 
 
