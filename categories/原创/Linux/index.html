@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Category: 原创 | juice 博客</title>
+  <title>Category: Linux | juice 博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="zhuxi.me">
 <meta property="og:type" content="website">
 <meta property="og:title" content="juice 博客">
-<meta property="og:url" content="http://juicechu.zhuxi.me/categories/原创/index.html">
+<meta property="og:url" content="http://juicechu.zhuxi.me/categories/原创/Linux/index.html">
 <meta property="og:site_name" content="juice 博客">
 <meta property="og:description" content="zhuxi.me">
 <meta name="twitter:card" content="summary">
@@ -196,133 +196,6 @@
 </nav>
       <div class="body-wrap">
   
-    <article id="post-2014-11-linux-doc2pdf2swf" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2014/11/05/2014-11-linux-doc2pdf2swf/" class="article-date">
-  	<time datetime="2014-11-05T07:38:00.000Z" itemprop="datePublished">2014-11-05</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/11/05/2014-11-linux-doc2pdf2swf/">在linux下实现doc转pdf，再转swf，实现在线预览功能</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>首先需要在linux系统下面安装swftools，官网：<a href="http://www.swftools.org/" target="_blank" rel="external">http://www.swftools.org/</a><br>安装swftools需要安装freetype和jpeglib依赖<br>地址：<br><a href="http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz" target="_blank" rel="external">http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz</a><br><a href="http://www.ijg.org/files/jpegsrc.v9a.tar.gz" target="_blank" rel="external">http://www.ijg.org/files/jpegsrc.v9a.tar.gz</a><br>然后再编译安装swftools<br>编辑如果出现以下出错<br>jpeg.c: In function ‘jpeg_load_from_mem’:<br>jpeg.c:331:30: error: ‘TRUE’ undeclared (first use in this function)<br>jpeg_read_header(&amp;cinfo, TRUE);<br>^<br>jpeg.c: In function ‘jpeg_load’:<br>jpeg.c:380:30: error: ‘TRUE’ undeclared (first use in this function)<br>jpeg_read_header(&amp;cinfo, TRUE);<br>^<br>jpeg.c: In function ‘jpeg_get_size’:<br>jpeg.c:462:30: error: ‘TRUE’ undeclared (first use in this function)<br>jpeg_read_header(&amp;cinfo, TRUE);<br>^<br>make[1]: <strong><em> [jpeg.o] Error 1<br>make[1]: Leaving directory `/home/geekz/Downloads/swftools-0.9.2/lib’<br>make: </em></strong> [all] Error 2</p>
-<p>那就将源文件的lib/jpeg.c文件中的TRUE和FALSE变量分别改成1和0，又或者在文件首部加入</p>
-<p>#define TRUE 1</p>
-<p>#define FALSE 0</p>
-<p>swftools中文支持<br>mkdir –p /usr/share/xpdf<br>cd /usr/share/xpdf/<br>下载中文支持及字体库<br>wget ftp://ftp.foolabs.com/pub/xpdf/xpdf-chinese-simplified.tar.gz<br>wget <a href="http://www.nginxs.com/download/font.zip" target="_blank" rel="external">http://www.nginxs.com/download/font.zip</a><br>tar zxvf xpdf-chinese-simplified.tar.gz<br>unzip font.zip<br>mv Gbsn00lp.ttf gkai00mp.ttf xpdf-chinese-simplified/CMap/<br>cd /usr/share/xpdf/xpdf-chinese-simplified<br>编辑,加入新增的字体</p>
-<p>vim add-to-xpdfrc<br>内容如下：<br>cidToUnicodeAdobe-GB1/usr/share/xpdf/chinese-simplified/Adobe-GB1.cidToUnicode<br>unicodeMapISO-2022-CN/usr/share/xpdf/chinese-simplified/ISO-2022-CN.unicodeMap<br>unicodeMapEUC-CN/usr/share/xpdf/chinese-simplified/EUC-CN.unicodeMap<br>unicodeMapGBK/usr/share/xpdf/chinese-simplified/GBK.unicodeMap<br>cMapDirAdobe-GB1/usr/share/xpdf/chinese-simplified/CMap<br>toUnicodeDir/usr/share/xpdf/chinese-simplified/CMap<br>displayCIDFontTT Adobe-GB1 /usr/share/xpdf/chinese-simplified/CMap/gkai00mp.ttf<br>保存后退出<br>要在浏览器里面复制中文到剪贴页不乱码，必须要在JS代码参数里面添加localeChain: ‘zh_CN’</p>
-<p>安装unoconv：sudo apt-get install unoconv<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exec(<span class="string">"sudo unoconv -f pdf -o &#123;$abPdfPath&#125; &#123;$abPath&#125;"</span>, <span class="variable">$output</span>, <span class="variable">$status</span>);</span><br></pre></td></tr></table></figure></p>
-<p>需要赋予www-data对unoconv的执行权限<br>执行sudo visudo，在最后加上www-data ALL=NOPASSWD:/usr/bin/unoconv<br>这样www-data就可以运行unoconv了</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/PHP/">PHP</a><a class="article-category-link" href="/categories/原创/PHP/Linux/">Linux</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2014-10-dedecms" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2014/10/10/2014-10-dedecms/" class="article-date">
-  	<time datetime="2014-10-10T07:03:00.000Z" itemprop="datePublished">2014-10-10</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/10/10/2014-10-dedecms/">关于dedecms的问题</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>由于业务关系，需要维护一个用dedecms搭建的官网，一开始以为时一两个就能将迁移的事情做好，但是发现迁移后，各种问题就来了。</p>
-<ol>
-<li>首先，这个官网已经时被入侵过了里面，都挂着很多游戏私服的广告，将它清理掉后，对线上的服务器针对这个官网做了些权限的限制。</li>
-</ol>
-<p>2.重要的问题来了，迁移后居然发现无法编辑文章，折腾了一整天，后来才发现原来时PHP版本的问题，dedecms暂时还没有支持到PHP5.3的版本，所以在某些地方会出现问题。<br>例如：</p>
-<p>htmlspecialchars在php5.4默认为utf8编码，gbk编码字符串经 htmlspecialchars 转义后的中文字符串为空，所以对于GBK的版本来说会一直返回空，导致很多文章内容都为空，解决办法时</p>
-<p>解决办法：给htmlspecialchars添加ENT_COMPAT ,’GB2312’参数修改编码默认值。</p>
-<p>具体修改页面：</p>
-<p>1、dede/article_add.php 和 dede/article_edit.php<br>将<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$title</span> = htmlspecialchars(cn_substrR(<span class="variable">$title</span>,<span class="variable">$cfg_title_maxlen</span>));</span><br><span class="line">改成</span><br><span class="line"><span class="variable">$title</span> = htmlspecialchars(cn_substrR(<span class="variable">$title</span>,<span class="variable">$cfg_title_maxlen</span>),ENT_COMPAT ,<span class="string">'GB2312'</span>);</span><br></pre></td></tr></table></figure></p>
-<p>2、include/ckeditor/ckeditor_php5.php 138行<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">将 htmlspecialchars(<span class="variable">$value</span>)  替换为 htmlspecialchars(<span class="variable">$value</span>, ENT_COMPAT ,<span class="string">'GB2312'</span>)</span><br></pre></td></tr></table></figure></p>
-<p>测试，发布文章成功。</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/PHP/">PHP</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
     <article id="post-2014-09-vps-pptp-vpn" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -481,61 +354,6 @@
 
 
   
-    <article id="post-2014-05-php-arithmetic" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2014/05/24/2014-05-php-arithmetic/" class="article-date">
-  	<time datetime="2014-05-24T15:52:00.000Z" itemprop="datePublished">2014-05-24</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/24/2014-05-php-arithmetic/">php 两个无限位数长度数的加减乘除算法</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="comment">//用字符串存放需要计算的数字</span></span><br><span class="line"><span class="variable">$var1</span> = <span class="string">'1812333333333333333333333333333312312312365465115168798845654646546541654623645654654132165798498799935965878749878990802045729820438846724720077549820225200070877958874065976960871699930588877830002524992671885461625646546546546546546126154654654'</span>;</span><br><span class="line"><span class="variable">$var2</span> = <span class="string">'2364565465413216579849879812363254541654565746871239648712653441235461243465142635441623141233241132234461523446512341236454126344612534'</span>;</span><br><span class="line"><span class="variable">$result</span> = countNum(<span class="variable">$var1</span>, <span class="variable">$var2</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$maxLength</span> = count(<span class="variable">$result</span>);</span><br><span class="line"><span class="keyword">for</span>( <span class="variable">$num</span> = <span class="variable">$maxLength</span> - <span class="number">1</span>; <span class="variable">$num</span> &gt;= <span class="number">0</span>; <span class="variable">$num</span>-- )&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="variable">$result</span>[<span class="variable">$num</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span><br><span class="line"> * <span class="doctag">@name</span> 计算两个数的加法</span><br><span class="line"> * <span class="doctag">@author</span> geekzhumail<span class="doctag">@gmail</span>.com</span><br><span class="line"> * <span class="doctag">@since</span> 2014-03-16</span><br><span class="line"> * <span class="doctag">@param</span> var1 第一个数字</span><br><span class="line"> * <span class="doctag">@param</span> var2 第二个数字</span><br><span class="line"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">countNum</span><span class="params">( <span class="variable">$var1</span>, <span class="variable">$var2</span> )</span></span>&#123;</span><br><span class="line">    <span class="variable">$result</span> = <span class="keyword">array</span>();<span class="comment">//结果</span></span><br><span class="line">    <span class="variable">$var1Length</span> = strlen( <span class="variable">$var1</span> );</span><br><span class="line">    <span class="variable">$var2Length</span> = strlen( <span class="variable">$var2</span> );</span><br><span class="line">    <span class="variable">$maxLength</span> = (<span class="variable">$var1Length</span> &gt;= <span class="variable">$var2Length</span> )?<span class="variable">$var1Length</span>:<span class="variable">$var2Length</span>;</span><br><span class="line">    <span class="variable">$temp</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="variable">$num</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>( <span class="keyword">true</span> )&#123;</span><br><span class="line">        <span class="variable">$temp1</span> = (<span class="variable">$num</span> &gt;= <span class="variable">$var1Length</span> )?<span class="number">0</span>:<span class="variable">$var1</span>[<span class="variable">$var1Length</span> - <span class="variable">$num</span> - <span class="number">1</span>];</span><br><span class="line">        <span class="variable">$temp2</span> = (<span class="variable">$num</span> &gt;= <span class="variable">$var2Length</span> )?<span class="number">0</span>:<span class="variable">$var2</span>[<span class="variable">$var2Length</span> - <span class="variable">$num</span> - <span class="number">1</span>];</span><br><span class="line">        <span class="variable">$temp</span> += <span class="variable">$temp1</span> + <span class="variable">$temp2</span>;</span><br><span class="line">        <span class="variable">$temp</span> = str_split(<span class="variable">$temp</span>);</span><br><span class="line">        <span class="comment">//var_dump($temp);</span></span><br><span class="line">        <span class="comment">//exit;</span></span><br><span class="line">        <span class="variable">$result</span>[<span class="variable">$num</span>] = ( count( <span class="variable">$temp</span> ) &gt; <span class="number">1</span> )?<span class="variable">$temp</span>[<span class="number">1</span>]:<span class="variable">$temp</span>[<span class="number">0</span>];</span><br><span class="line">        <span class="variable">$temp</span> = ( count( <span class="variable">$temp</span> ) &gt; <span class="number">1</span> )?<span class="variable">$temp</span>[<span class="number">0</span>]:<span class="number">0</span>;</span><br><span class="line">        <span class="variable">$num</span>++;</span><br><span class="line">        <span class="keyword">if</span>( <span class="variable">$num</span> == <span class="variable">$maxLength</span> )&#123;</span><br><span class="line">            <span class="keyword">if</span>( <span class="variable">$temp</span> != <span class="number">0</span> ) &#123;</span><br><span class="line">                <span class="variable">$result</span>[<span class="variable">$num</span>] = <span class="variable">$temp</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$result</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/PHP/">PHP</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
     <article id="post-2014-05-linux-sogou" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
@@ -564,61 +382,6 @@
       
         <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ubuntu下安装sogoupinyin</span><br><span class="line">sudo add-apt-repository ppa:fcitx-team/nightly</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install fcitx-sogoupinyin</span><br></pre></td></tr></table></figure>
 <p>如果找不到fcitx-sogoupinyin，可以在<a href="https://aur.archlinux.org/packages/fcitx-sogoupinyin/" target="_blank" rel="external">https://aur.archlinux.org/packages/fcitx-sogoupinyin/</a> 下载deb安装。</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/Linux/">Linux</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2014-05-linux-grub-repair" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2014/05/24/2014-05-linux-grub-repair/" class="article-date">
-  	<time datetime="2014-05-24T15:50:00.000Z" itemprop="datePublished">2014-05-24</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/24/2014-05-linux-grub-repair/">linux grub 修复注意</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>在用livecd 修复ubuntu引导的时候，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sudo -i</span><br><span class="line">fdisk <span class="operator">-l</span></span><br><span class="line">mount /dev/sda* /mnt</span><br><span class="line">grub-install --boot-directory /mnt /dev/sda</span><br><span class="line">如果linux系统是分区安装的话要记录挂载所有的分区，例如</span><br><span class="line">mount /dev/sda7 /mnt</span><br><span class="line">mount /dev/sda3 /mnt/boot</span><br><span class="line">mount /dev/sda8 /mnt/home</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -709,11 +472,11 @@
 
 
   
-    <article id="post-2014-05-codeigniter-email-ssl" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2014-05-linux-grub-repair" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2014/05/24/2014-05-codeigniter-email-ssl/" class="article-date">
-  	<time datetime="2014-05-24T15:47:00.000Z" itemprop="datePublished">2014-05-24</time>
+      <a href="/2014/05/24/2014-05-linux-grub-repair/" class="article-date">
+  	<time datetime="2014-05-24T15:50:00.000Z" itemprop="datePublished">2014-05-24</time>
 </a>
     </div>
   
@@ -726,7 +489,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/24/2014-05-codeigniter-email-ssl/">使用fastcgi_finish_request提高页面响应速度</a>
+      <a class="article-title" href="/2014/05/24/2014-05-linux-grub-repair/">linux grub 修复注意</a>
     </h1>
   
 
@@ -735,8 +498,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>CI的email类是支持SSL加密的，只要设置 $config[‘smtp_crypto’] = ‘ssl’; 就行了，官方文档上面没有写这个，太坑了。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$config</span>[<span class="string">'protocol'</span>] = <span class="string">'smtp'</span>;<span class="comment">// mail, sendmail, or smtp</span></span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_host'</span>] = <span class="string">'smtp.163.com'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_user'</span>] = <span class="string">'XXX@163.com'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_pass'</span>] = <span class="string">'XXX'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_port'</span>] = <span class="string">'465'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_crypto'</span>] = <span class="string">'ssl'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'charset'</span>] = <span class="string">'UTF-8'</span>;<span class="comment">// 默认UTF-8</span></span><br><span class="line"><span class="variable">$config</span>[<span class="string">'wordwrap'</span>] = <span class="keyword">true</span>;<span class="comment">//自动换行</span></span><br></pre></td></tr></table></figure></p>
-<p>done!</p>
+        <p>在用livecd 修复ubuntu引导的时候，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sudo -i</span><br><span class="line">fdisk <span class="operator">-l</span></span><br><span class="line">mount /dev/sda* /mnt</span><br><span class="line">grub-install --boot-directory /mnt /dev/sda</span><br><span class="line">如果linux系统是分区安装的话要记录挂载所有的分区，例如</span><br><span class="line">mount /dev/sda7 /mnt</span><br><span class="line">mount /dev/sda3 /mnt/boot</span><br><span class="line">mount /dev/sda8 /mnt/home</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -746,7 +508,7 @@
       
       
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/PHP/">PHP</a>
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/Linux/">Linux</a>
 	</div>
 
 
@@ -765,68 +527,6 @@
 
 
   
-    <article id="post-2013-11-nginx-fpm-file-not-find" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/11/22/2013-11-nginx-fpm-file-not-find/" class="article-date">
-  	<time datetime="2013-11-22T02:29:00.000Z" itemprop="datePublished">2013-11-22</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/11/22/2013-11-nginx-fpm-file-not-find/">ubuntu下配置nginx+php-fpm的file not find问题</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>第一种情况下sudo vim /etc/nginx/sites-enable/default下配置</p>
-<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">location</span> <span class="regexp">~ \.php$</span> &#123;</span><br><span class="line">    <span class="title">try_files</span> <span class="variable">$uri</span> =<span class="number">404</span>;</span><br><span class="line">    <span class="title">fastcgi_split_path_info</span><span class="regexp"> ^(.+\.php)(/.+)$</span>;</span><br><span class="line">    <span class="title">fastcgi_pass</span> <span class="url">unix:/var/run/php5-fpm.sock</span>;</span><br><span class="line">    <span class="title">fastcgi_index</span> index.php;</span><br><span class="line">    <span class="title">fastcgi_read_timeout</span> <span class="number">300</span>;</span><br><span class="line">    <span class="title">fastcgi_param</span> SCRIPT_FILENAME <span class="variable">$document_root</span><span class="variable">$fastcgi_script_name</span>;</span><br><span class="line">    <span class="title">include</span> fastcgi_params;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>第二种情况就是 /etc/php5/fpm/pool.d/www.conf</p>
-<p>文件配置下user = XXX必须与你/etc/nginx/nginx.conf的配置下user =XXX 一置，而且XXX必须是有访问权限。</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-  
-    <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/categories/原创/page/2/">2</a><a class="extend next" rel="next" href="/categories/原创/page/2/">Next &raquo;</a>
-    </nav>
   
 </div>
       <footer id="footer">

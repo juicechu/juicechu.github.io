@@ -196,11 +196,11 @@
 </nav>
       <div class="body-wrap">
   
-    <article id="post-2014-05-php5.2-upgrade-php5.6" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2014-11-linux-doc2pdf2swf" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2014/05/20/2014-05-php5.2-upgrade-php5.6/" class="article-date">
-  	<time datetime="2014-05-20T01:17:00.000Z" itemprop="datePublished">2014-05-20</time>
+      <a href="/2014/11/05/2014-11-linux-doc2pdf2swf/" class="article-date">
+  	<time datetime="2014-11-05T07:38:00.000Z" itemprop="datePublished">2014-11-05</time>
 </a>
     </div>
   
@@ -213,7 +213,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2014/05/20/2014-05-php5.2-upgrade-php5.6/">PHP 自 5.2 到 5.6 中新增的功能详解</a>
+      <a class="article-title" href="/2014/11/05/2014-11-linux-doc2pdf2swf/">在linux下实现doc转pdf，再转swf，实现在线预览功能</a>
     </h1>
   
 
@@ -222,191 +222,79 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h2 id="截至目前(2014-2),_PHP_的最新稳定版本是_PHP5-5,_但有差不多一半的用户仍在使用已经不在维护_[注]_的_PHP5-2,_其余的一半用户在使用_PHP5-3_[注]-">截至目前(2014.2), PHP 的最新稳定版本是 PHP5.5, 但有差不多一半的用户仍在使用已经不在维护 [注] 的 PHP5.2, 其余的一半用户在使用 PHP5.3 [注].</h2><p>因为 PHP 那“集百家之长”的蛋疼语法，加上社区氛围不好，很多人对新版本，新特征并无兴趣。<br>本文将会介绍自 PHP5.2 起，直至 PHP5.6 中增加的新特征。</p>
-<p>PHP5.2 以前：autoload, PDO 和 MySQLi, 类型约束<br>PHP5.2：JSON 支持<br>PHP5.3：弃用的功能，匿名函数，新增魔术方法，命名空间，后期静态绑定，Heredoc 和 Nowdoc, const, 三元运算符，Phar<br>PHP5.4：Short Open Tag, 数组简写形式，Traits, 内置 Web 服务器，细节修改<br>PHP5.5：yield, list() 用于 foreach, 细节修改<br>PHP5.6: 常量增强，可变函数参数，命名空间增强<br>注：已于2011年1月停止支持： <a href="http://www.php.net/eol.php" target="_blank" rel="external">http://www.php.net/eol.php</a><br>注：<a href="http://w3techs.com/technologies/details/pl-php/5/all" target="_blank" rel="external">http://w3techs.com/technologies/details/pl-php/5/all</a></p>
-<p>PHP5.2以前</p>
-<p>(2006前)<br>顺便介绍一下 PHP5.2 已经出现但值得介绍的特征。</p>
-<p>autoload</p>
-<p>大家可能都知道 __autoload() 函数，如果定义了该函数，那么当在代码中使用一个未定义的类的时候，该函数就会被调用，你可以在该函数中加载相应的类实现文件，如：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">__autoload</span><span class="params">(<span class="variable">$classname</span>)</span></span>&#123;</span><br><span class="line">    <span class="keyword">require_once</span>(<span class="string">"&#123;$classname&#125;.php"</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>但该函数已经不被建议使用，原因是一个项目中仅能有一个这样的 __autoload() 函数，因为 PHP 不允许函数重名。但当你使用一些类库的时候，难免会出现多个 autoload 函数的需要，于是 spl_autoload_register() 取而代之：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">spl_autoload_register(<span class="function"><span class="keyword">function</span><span class="params">(<span class="variable">$classname</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">require_once</span>(<span class="string">"&#123;$classname&#125;.php"</span>)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
-<p>spl_autoload_register() 会将一个函数注册到 autoload 函数列表中，当出现未定义的类的时候，SPL [注] 会按照注册的倒序逐个调用被注册的 autoload 函数，这意味着你可以使用 spl_autoload_register() 注册多个 autoload 函数.</p>
-<p>注：SPL: Standard PHP Library, 标准 PHP 库, 被设计用来解决一些经典问题(如数据结构).</p>
-<p>PDO 和 MySQLi</p>
-<p>即 PHP Data Object, PHP 数据对象，这是 PHP 的新式数据库访问接口。</p>
-<p>按照传统的风格，访问 MySQL 数据库应该是这样子：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">// 连接到服务器，选择数据库</span></span><br><span class="line"><span class="variable">$conn</span> = mysql_connect(<span class="string">"localhost"</span>, <span class="string">"user"</span>, <span class="string">"password"</span>);</span><br><span class="line">mysql_select_db(<span class="string">"database"</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 执行 SQL 查询</span></span><br><span class="line"><span class="variable">$type</span> = <span class="variable">$_POST</span>[<span class="string">'type'</span>];</span><br><span class="line"><span class="variable">$sql</span> = <span class="string">"SELECT * FROM `table` WHERE `type` = &#123;$type&#125;"</span>;</span><br><span class="line"><span class="variable">$result</span> = mysql_query(<span class="variable">$sql</span>);</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 打印结果</span></span><br><span class="line"><span class="keyword">while</span>(<span class="variable">$row</span> = mysql_fetch_array(<span class="variable">$result</span>, MYSQL_ASSOC))</span><br><span class="line">&#123;</span><br><span class="line"><span class="keyword">foreach</span>(<span class="variable">$row</span> <span class="keyword">as</span> <span class="variable">$k</span> =&gt; <span class="variable">$v</span>)</span><br><span class="line"><span class="keyword">print</span> <span class="string">"&#123;$k&#125;: &#123;$v&#125;\n"</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 释放结果集，关闭连接</span></span><br><span class="line">mysql_free_result(<span class="variable">$result</span>);</span><br><span class="line">mysql_close(<span class="variable">$conn</span>);</span><br></pre></td></tr></table></figure>
-<p>为了能够让代码实现数据库无关，即一段代码同时适用于多种数据库(例如以上代码仅仅适用于MySQL)，PHP 官方设计了 PDO.</p>
-<p>除此之外，PDO 还提供了更多功能，比如：</p>
+        <p>首先需要在linux系统下面安装swftools，官网：<a href="http://www.swftools.org/" target="_blank" rel="external">http://www.swftools.org/</a><br>安装swftools需要安装freetype和jpeglib依赖<br>地址：<br><a href="http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz" target="_blank" rel="external">http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz</a><br><a href="http://www.ijg.org/files/jpegsrc.v9a.tar.gz" target="_blank" rel="external">http://www.ijg.org/files/jpegsrc.v9a.tar.gz</a><br>然后再编译安装swftools<br>编辑如果出现以下出错<br>jpeg.c: In function ‘jpeg_load_from_mem’:<br>jpeg.c:331:30: error: ‘TRUE’ undeclared (first use in this function)<br>jpeg_read_header(&amp;cinfo, TRUE);<br>^<br>jpeg.c: In function ‘jpeg_load’:<br>jpeg.c:380:30: error: ‘TRUE’ undeclared (first use in this function)<br>jpeg_read_header(&amp;cinfo, TRUE);<br>^<br>jpeg.c: In function ‘jpeg_get_size’:<br>jpeg.c:462:30: error: ‘TRUE’ undeclared (first use in this function)<br>jpeg_read_header(&amp;cinfo, TRUE);<br>^<br>make[1]: <strong><em> [jpeg.o] Error 1<br>make[1]: Leaving directory `/home/geekz/Downloads/swftools-0.9.2/lib’<br>make: </em></strong> [all] Error 2</p>
+<p>那就将源文件的lib/jpeg.c文件中的TRUE和FALSE变量分别改成1和0，又或者在文件首部加入</p>
+<p>#define TRUE 1</p>
+<p>#define FALSE 0</p>
+<p>swftools中文支持<br>mkdir –p /usr/share/xpdf<br>cd /usr/share/xpdf/<br>下载中文支持及字体库<br>wget ftp://ftp.foolabs.com/pub/xpdf/xpdf-chinese-simplified.tar.gz<br>wget <a href="http://www.nginxs.com/download/font.zip" target="_blank" rel="external">http://www.nginxs.com/download/font.zip</a><br>tar zxvf xpdf-chinese-simplified.tar.gz<br>unzip font.zip<br>mv Gbsn00lp.ttf gkai00mp.ttf xpdf-chinese-simplified/CMap/<br>cd /usr/share/xpdf/xpdf-chinese-simplified<br>编辑,加入新增的字体</p>
+<p>vim add-to-xpdfrc<br>内容如下：<br>cidToUnicodeAdobe-GB1/usr/share/xpdf/chinese-simplified/Adobe-GB1.cidToUnicode<br>unicodeMapISO-2022-CN/usr/share/xpdf/chinese-simplified/ISO-2022-CN.unicodeMap<br>unicodeMapEUC-CN/usr/share/xpdf/chinese-simplified/EUC-CN.unicodeMap<br>unicodeMapGBK/usr/share/xpdf/chinese-simplified/GBK.unicodeMap<br>cMapDirAdobe-GB1/usr/share/xpdf/chinese-simplified/CMap<br>toUnicodeDir/usr/share/xpdf/chinese-simplified/CMap<br>displayCIDFontTT Adobe-GB1 /usr/share/xpdf/chinese-simplified/CMap/gkai00mp.ttf<br>保存后退出<br>要在浏览器里面复制中文到剪贴页不乱码，必须要在JS代码参数里面添加localeChain: ‘zh_CN’</p>
+<p>安装unoconv：sudo apt-get install unoconv<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exec(<span class="string">"sudo unoconv -f pdf -o &#123;$abPdfPath&#125; &#123;$abPath&#125;"</span>, <span class="variable">$output</span>, <span class="variable">$status</span>);</span><br></pre></td></tr></table></figure></p>
+<p>需要赋予www-data对unoconv的执行权限<br>执行sudo visudo，在最后加上www-data ALL=NOPASSWD:/usr/bin/unoconv<br>这样www-data就可以运行unoconv了</p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/PHP/">PHP</a><a class="article-category-link" href="/categories/原创/PHP/Linux/">Linux</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2014-10-dedecms" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2014/10/10/2014-10-dedecms/" class="article-date">
+  	<time datetime="2014-10-10T07:03:00.000Z" itemprop="datePublished">2014-10-10</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/10/10/2014-10-dedecms/">关于dedecms的问题</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>由于业务关系，需要维护一个用dedecms搭建的官网，一开始以为时一两个就能将迁移的事情做好，但是发现迁移后，各种问题就来了。</p>
 <ol>
-<li>面向对象风格的接口</li>
-<li>SQL预编译(prepare), 占位符语法</li>
-<li>更高的执行效率，作为官方推荐，有特别的性能优化</li>
-<li>支持大部分SQL数据库，更换数据库无需改动代码</li>
+<li>首先，这个官网已经时被入侵过了里面，都挂着很多游戏私服的广告，将它清理掉后，对线上的服务器针对这个官网做了些权限的限制。</li>
 </ol>
-<p>上面的代码用 PDO 实现将会是这样：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 连接到数据库</span></span><br><span class="line"><span class="variable">$conn</span> = <span class="keyword">new</span> PDO(<span class="string">"mysql:host=localhost;dbname=database"</span>, <span class="string">"user"</span>, <span class="string">"password"</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 预编译SQL, 绑定参数</span></span><br><span class="line"><span class="variable">$query</span> = <span class="variable">$conn</span>-&gt;prepare(<span class="string">"SELECT * FROM `table` WHERE `type` = :type"</span>);</span><br><span class="line"><span class="variable">$query</span>-&gt;bindParam(<span class="string">"type"</span>, <span class="variable">$_POST</span>[<span class="string">'type'</span>]);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 执行查询并打印结果</span></span><br><span class="line"><span class="keyword">foreach</span>(<span class="variable">$query</span>-&gt;execute() <span class="keyword">as</span> <span class="variable">$row</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$row</span> <span class="keyword">as</span> <span class="variable">$k</span> =&gt; <span class="variable">$v</span>)</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"&#123;$k&#125;: &#123;$v&#125;\n"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>PDO 是官方推荐的，更为通用的数据库访问方式，如果你没有特殊需求，那么你最好学习和使用 PDO.<br>但如果你需要使用 MySQL 所特有的高级功能，那么你可能需要尝试一下 MySQLi, 因为 PDO 为了能够同时在多种数据库上使用，不会包含那些 MySQL 独有的功能。</p>
-<p>MySQLi 是 MySQL 的增强接口，同时提供面向过程和面向对象接口，也是目前推荐的 MySQL 驱动，旧的C风格 MySQL 接口将会在今后被默认关闭。<br>MySQLi 的用法和以上两段代码相比，没有太多新概念，在此不再给出示例，可以参见 PHP 官网文档 [注]。</p>
-<p>注：<a href="http://www.php.net/manual/en/mysqli.quickstart.php" target="_blank" rel="external">http://www.php.net/manual/en/mysqli.quickstart.php</a></p>
-<p>类型约束</p>
-<p>通过类型约束可以限制参数的类型，不过这一机制并不完善，目前仅适用于类和 callable(可执行类型) 以及 array(数组), 不适用于 string 和 int.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 限制第一个参数为 MyClass, 第二个参数为可执行类型，第三个参数为数组</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">MyFunction</span><span class="params">(MyClass <span class="variable">$a</span>, callable <span class="variable">$b</span>, array <span class="variable">$c</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line"><span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>PHP5.2</p>
-<p>(2006-2011)</p>
-<p>JSON 支持</p>
-<p>包括 json_encode(), json_decode() 等函数，JSON 算是在 Web 领域非常常用的数据交换格式，可以被 JS 直接支持，JSON 实际上是 JS 语法的一部分。<br>JSON 系列函数，可以将 PHP 中的数组结构与 JSON 字符串进行转换：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$array</span> = [<span class="string">"key"</span> =&gt; <span class="string">"value"</span>, <span class="string">"array"</span> =&gt; [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>]];</span><br><span class="line"><span class="variable">$json</span> = json_encode(<span class="variable">$array</span>);</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"&#123;$json&#125;\n"</span>;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$object</span> = json_decode(<span class="variable">$json</span>);</span><br><span class="line">print_r(<span class="variable">$object</span>);</span><br><span class="line">输出：</span><br><span class="line"></span><br><span class="line">&#123;<span class="string">"key"</span>:<span class="string">"value"</span>,<span class="string">"array"</span>:[<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>]&#125;</span><br><span class="line">stdClass Object</span><br><span class="line">(</span><br><span class="line"> [key] =&gt; value</span><br><span class="line"> [<span class="keyword">array</span>] =&gt; <span class="keyword">Array</span></span><br><span class="line">    (</span><br><span class="line">        [<span class="number">0</span>] =&gt; <span class="number">1</span></span><br><span class="line">        [<span class="number">1</span>] =&gt; <span class="number">2</span></span><br><span class="line">        [<span class="number">2</span>] =&gt; <span class="number">3</span></span><br><span class="line">        [<span class="number">3</span>] =&gt; <span class="number">4</span></span><br><span class="line">    )</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
-<p>值得注意的是 json_decode() 默认会返回一个对象而非数组，如果需要返回数组需要将第二个参数设置为 true.</p>
-<p>PHP5.3</p>
-<p>(2009-2012)</p>
-<p>PHP5.3 算是一个非常大的更新，新增了大量新特征，同时也做了一些不向下兼容的修改。</p>
-<p>弃用的功能</p>
-<p>以下几个功能被弃用，若在配置文件中启用，则 PHP 会在运行时发出警告。</p>
-<p>Register Globals</p>
-<p>这是 php.ini 中的一个选项(register_globals), 开启后会将所有表单变量($_GET和$_POST)注册为全局变量.<br>看下面的例子：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(isAuth())</span><br><span class="line">    <span class="variable">$authorized</span> = <span class="keyword">true</span>;</span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$authorized</span>)</span><br><span class="line">    <span class="keyword">include</span>(<span class="string">"page.php"</span>);</span><br></pre></td></tr></table></figure>
-<p>这段代码在通过验证时，将 $authorized 设置为 true. 然后根据 $authorized 的值来决定是否显示页面.</p>
-<p>但由于并没有事先把 $authorized 初始化为 false, 当 register_globals 打开时，可能访问 /auth.php?authorized=1 来定义该变量值，绕过身份验证。</p>
-<p>该特征属于历史遗留问题，在 PHP4.2 中被默认关闭，在 PHP5.4 中被移除。</p>
-<p>Magic Quotes</p>
-<p>对应 php.ini 中的选项 magic_quotes_gpc, 这个特征同样属于历史遗留问题，已经在 PHP5.4 中移除。</p>
-<p>该特征会将所有用户输入进行转义，这看上去不错，在第一章我们提到过要对用户输入进行转义。<br>但是 PHP 并不知道哪些输入会进入 SQL , 哪些输入会进入 Shell, 哪些输入会被显示为 HTML, 所以很多时候这种转义会引起混乱。</p>
-<p>Safe Mode</p>
-<p>很多虚拟主机提供商使用 Safe Mode 来隔离多个用户，但 Safe Mode 存在诸多问题，例如某些扩展并不按照 Safe Mode 来进行权限控制。<br>PHP官方推荐使用操作系统的机制来进行权限隔离，让Web服务器以不同的用户权限来运行PHP解释器，请参见第一章中的最小权限原则.</p>
-<p>匿名函数</p>
-<p>也叫闭包(Closures), 经常被用来临时性地创建一个无名函数，用于回调函数等用途。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$func</span> = <span class="function"><span class="keyword">function</span><span class="params">(<span class="variable">$arg</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">print</span> <span class="variable">$arg</span>;</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$func</span>(<span class="string">"Hello World"</span>);</span><br></pre></td></tr></table></figure>
-<p>以上代码定义了一个匿名函数，并赋值给了 $func.<br>可以看到定义匿名函数依旧使用 function 关键字，只不过省略了函数名，直接是参数列表。</p>
-<p>然后我们又调用了 $func 所储存的匿名函数。</p>
-<p>匿名函数还可以用 use 关键字来捕捉外部变量：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">arrayPlus</span><span class="params">(<span class="variable">$array</span>, <span class="variable">$num</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    array_walk(<span class="variable">$array</span>, <span class="function"><span class="keyword">function</span><span class="params">(&amp;<span class="variable">$v</span>)</span> <span class="title">use</span><span class="params">(<span class="variable">$num</span>)</span></span>&#123;</span><br><span class="line">        <span class="variable">$v</span> += <span class="variable">$num</span>;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>上面的代码定义了一个 arrayPlus() 函数(这不是匿名函数), 它会将一个数组($array)中的每一项，加上一个指定的数字($num).</p>
-<p>在 arrayPlus() 的实现中，我们使用了 array_walk() 函数，它会为一个数组的每一项执行一个回调函数，即我们定义的匿名函数。<br>在匿名函数的参数列表后，我们用 use 关键字将匿名函数外的 $num 捕捉到了函数内，以便知道到底应该加上多少。</p>
-<p>魔术方法：<strong>invoke(), </strong>callStatic()</p>
-<p>PHP 的面向对象体系中，提供了若干“魔术方法”，用于实现类似其他语言中的“重载”，如在访问不存在的属性、方法时触发某个魔术方法。</p>
-<p>随着匿名函数的加入，PHP 引入了一个新的魔术方法 __invoke().<br>该魔术方法会在将一个对象作为函数调用时被调用：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__invoke</span><span class="params">(<span class="variable">$str</span>)</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="string">"A::__invoke(): &#123;$str&#125;"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$a</span> = <span class="keyword">new</span> A;</span><br><span class="line"><span class="variable">$a</span>(<span class="string">"Hello World"</span>);</span><br></pre></td></tr></table></figure>
-<p>输出毫无疑问是：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A::__invoke(): Hello World</span><br></pre></td></tr></table></figure>
-<p>__callStatic() 则会在调用一个不存在的静态方法时被调用。</p>
-<p>命名空间</p>
-<p>PHP的命名空间有着前无古人后无来者的无比蛋疼的语法：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="comment">// 命名空间的分隔符是反斜杠，该声明语句必须在文件第一行。</span></span><br><span class="line"><span class="comment">// 命名空间中可以包含任意代码，但只有 **类, 函数, 常量** 受命名空间影响。</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">XXOO</span>\<span class="title">Test</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 该类的完整限定名是 \XXOO\Test\A , 其中第一个反斜杠表示全局命名空间。</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span>&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 你还可以在已经文件中定义第二个命名空间，接下来的代码将都位于 \Other\Test2 .</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Other</span>\<span class="title">Test2</span>;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 实例化来自其他命名空间的对象：</span></span><br><span class="line"><span class="variable">$a</span> = <span class="keyword">new</span> \XXOO\Test\A;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span></span>&#123;&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// 你还可以用花括号定义第三个命名空间</span></span><br><span class="line"><span class="keyword">namespace</span> <span class="title">Other</span> &#123;</span><br><span class="line">// 实例化来自子命名空间的对象：</span><br><span class="line">$<span class="title">b</span> = <span class="title">new</span> <span class="title">Test2</span>\<span class="title">B</span>;</span><br><span class="line"><span class="comment">// 导入来自其他命名空间的名称，并重命名，</span></span><br><span class="line"><span class="comment">// 注意只能导入类，不能用于函数和常量。</span></span><br><span class="line"><span class="keyword">use</span> \<span class="title">XXOO</span>\<span class="title">Test</span>\<span class="title">A</span> <span class="title">as</span> <span class="title">ClassA</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>更多有关命名空间的语法介绍请参见官网 [注].</p>
-<p>命名空间时常和 autoload 一同使用，用于自动加载类实现文件：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">spl_autoload_register(</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="params">(<span class="variable">$class</span>)</span> </span>&#123;</span><br><span class="line">        spl_autoload(str_replace(<span class="string">"\\"</span>, <span class="string">"/"</span>, <span class="variable">$class</span>));</span><br><span class="line">    &#125;</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
-<p>当你实例化一个类 \XXOO\Test\A 的时候，这个类的完整限定名会被传递给 autoload 函数，autoload 函数将类名中的命名空间分隔符(反斜杠)替换为斜杠，并包含对应文件。<br>这样可以实现类定义文件分级储存，按需自动加载。</p>
-<p>注：<a href="http://www.php.net/manual/zh/language.namespaces.php" target="_blank" rel="external">http://www.php.net/manual/zh/language.namespaces.php</a></p>
-<p>后期静态绑定</p>
-<p>PHP 的 OPP 机制，具有继承和类似虚函数的功能，例如如下的代码：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">callFuncXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="variable">$this</span>-&gt;funcXXOO();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">funcXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"A::funcXXOO()"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">funcXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"B::funcXXOO"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$b</span> = <span class="keyword">new</span> B;</span><br><span class="line"><span class="variable">$b</span>-&gt;callFuncXXOO();</span><br></pre></td></tr></table></figure>
-<p>输出是：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">B::funcXXOO</span><br></pre></td></tr></table></figure>
-<p>可以看到，当在 A 中使用 $this-&gt;funcXXOO() 时，体现了“虚函数”的机制，实际调用的是 B::funcXXOO().<br>然而如果将所有函数都改为静态函数：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">callFuncXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="keyword">self</span>::funcXXOO();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">funcXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"A::funcXXOO()"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">B</span> <span class="keyword">extends</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">funcXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">"B::funcXXOO"</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$b</span> = <span class="keyword">new</span> B;</span><br><span class="line"><span class="variable">$b</span>-&gt;callFuncXXOO();</span><br></pre></td></tr></table></figure>
-<p>情况就没这么乐观了，输出是：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A::funcXXOO()</span><br></pre></td></tr></table></figure>
-<p>这是因为 self 的语义本来就是“当前类”，所以 PHP5.3 给 static 关键字赋予了一个新功能：后期静态绑定：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">callFuncXXOO</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">print</span> <span class="keyword">static</span>::funcXXOO();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="comment">// ...</span></span><br></pre></td></tr></table></figure>
-<p>这样就会像预期一样输出了：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">B::funcXXOO</span><br></pre></td></tr></table></figure>
-<p>Heredoc 和 Nowdoc</p>
-<p>PHP5.3 对 Heredoc 以及 Nowdoc 进行了一些改进，它们都用于在 PHP 代码中嵌入大段字符串。</p>
-<p>Heredoc 的行为类似于一个双引号字符串：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$name</span> = <span class="string">"MyName"</span>;</span><br><span class="line"><span class="keyword">echo</span> &lt;&lt;&lt; TEXT</span><br><span class="line">My name is <span class="string">"&#123;$name&#125;"</span>.</span><br><span class="line">TEXT;</span><br><span class="line">```php</span><br><span class="line"></span><br><span class="line">Heredoc 以三个左尖括号开始，后面跟一个标识符(TEXT), 直到一个同样的顶格的标识符(不能缩进)结束。</span><br><span class="line">就像双引号字符串一样，其中可以嵌入变量。</span><br><span class="line"></span><br><span class="line">Heredoc 还可以用于函数参数，以及类成员初始化：</span><br><span class="line"></span><br><span class="line">```php</span><br><span class="line">var_dump(<span class="string">&lt;&lt;&lt;EOD</span><br><span class="line">Hello World</span><br><span class="line">EOD</span></span><br><span class="line">);</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">A</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">const</span> xx = &lt;&lt;&lt; EOD</span><br><span class="line">        Hello World</span><br><span class="line">        EOD;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="variable">$oo</span> = &lt;&lt;&lt; EOD</span><br><span class="line">        Hello World</span><br><span class="line">        EOD;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>Nowdoc 的行为像一个单引号字符串，不能在其中嵌入变量，和 Heredoc 唯一的区别就是，三个左尖括号后的标识符要以单引号括起来：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$name</span> = <span class="string">"MyName"</span>;</span><br><span class="line"><span class="keyword">echo</span> &lt;&lt;&lt; <span class="string">'TEXT'</span></span><br><span class="line">My name is <span class="string">"&#123;$name&#125;"</span>.</span><br><span class="line">TEXT;</span><br></pre></td></tr></table></figure>
-<p>输出：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">My name is <span class="string">"&#123;$name&#125;"</span>.</span><br></pre></td></tr></table></figure>
-<p>用 const 定义常量</p>
-<p>PHP5.3 起同时支持在全局命名空间和类中使用 const 定义常量。</p>
-<p>旧式风格：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">define(<span class="string">"XOOO"</span>, <span class="string">"Value"</span>);</span><br><span class="line">新式风格：</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> XXOO = <span class="string">"Value"</span>;</span><br></pre></td></tr></table></figure>
-<p>const 形式仅适用于常量，不适用于运行时才能求值的表达式：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 正确</span></span><br><span class="line"><span class="keyword">const</span> XXOO = <span class="number">1234</span>;</span><br><span class="line"><span class="comment">// 错误</span></span><br><span class="line"><span class="keyword">const</span> XXOO = <span class="number">2</span> * <span class="number">617</span>;</span><br></pre></td></tr></table></figure>
-<p>三元运算符简写形式</p>
-<p>旧式风格：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> <span class="variable">$a</span> ? <span class="variable">$a</span> : <span class="string">"No Value"</span>;</span><br></pre></td></tr></table></figure>
-<p>可简写成：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">echo</span> <span class="variable">$a</span> ?: <span class="string">"No Value"</span>;</span><br></pre></td></tr></table></figure>
-<p>即如果省略三元运算符的第二个部分，会默认用第一个部分代替。</p>
-<p>Phar</p>
-<p>Phar即PHP Archive, 起初只是Pear中的一个库而已，后来在PHP5.3被重新编写成C扩展并内置到 PHP 中。<br>Phar用来将多个 .php 脚本打包(也可以打包其他文件)成一个 .phar 的压缩文件(通常是ZIP格式)。<br>目的在于模仿 Java 的 .jar, 不对，目的是为了让发布PHP应用程序更加方便。同时还提供了数字签名验证等功能。</p>
-<p>.phar 文件可以像 .php 文件一样，被PHP引擎解释执行，同时你还可以写出这样的代码来包含(require) .phar 中的代码：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">require</span>(<span class="string">"xxoo.phar"</span>);</span><br><span class="line"><span class="keyword">require</span>(<span class="string">"phar://xxoo.phar/xo/ox.php"</span>);</span><br></pre></td></tr></table></figure>
-<p>更多信息请参见官网 [注].</p>
-<p>注：<a href="http://www.php.net/manual/zh/phar.using.intro.php" target="_blank" rel="external">http://www.php.net/manual/zh/phar.using.intro.php</a></p>
-<p>PHP5.4</p>
-<p>(2012-2013)</p>
-<p>Short Open Tag</p>
-<p>Short Open Tag 自 PHP5.4 起总是可用。<br>在这里集中讲一下有关 PHP 起止标签的问题。即：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="comment">// Code...</span></span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>通常就是上面的形式，除此之外还有一种简写形式：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?</span> <span class="comment">/* Code... */</span> <span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>还可以把</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span> <span class="keyword">echo</span> <span class="variable">$xxoo</span>;<span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>简写成：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?</span>= <span class="variable">$xxoo</span>;<span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
-<p>这种简写形式被称为 Short Open Tag, 在 PHP5.3 起被默认开启，在 PHP5.4 起总是可用。<br>使用这种简写形式在 HTML 中嵌入 PHP 变量将会非常方便。</p>
-<p>对于纯 PHP 文件(如类实现文件), PHP 官方建议顶格写起始标记，同时 省略 结束标记。<br>这样可以确保整个 PHP 文件都是 PHP 代码，没有任何输出，否则当你包含该文件后，设置 Header 和 Cookie 时会遇到一些麻烦 [注].</p>
-<p>注：Header 和 Cookie 必须在输出任何内容之前被发送。</p>
-<p>数组简写形式</p>
-<p>这是非常方便的一项特征！</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 原来的数组写法</span></span><br><span class="line"><span class="variable">$arr</span> = <span class="keyword">array</span>(<span class="string">"key"</span> =&gt; <span class="string">"value"</span>, <span class="string">"key2"</span> =&gt; <span class="string">"value2"</span>);</span><br><span class="line"><span class="comment">// 简写形式</span></span><br><span class="line"><span class="variable">$arr</span> = [<span class="string">"key"</span> =&gt; <span class="string">"value"</span>, <span class="string">"key2"</span> =&gt; <span class="string">"value2"</span>];</span><br></pre></td></tr></table></figure>
-<p>Traits</p>
-<p>所谓Traits就是“构件”，是用来替代继承的一种机制。PHP中无法进行多重继承，但一个类可以包含多个Traits.</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Traits不能被单独实例化，只能被类所包含</span></span><br><span class="line"><span class="keyword">trait</span> SayWorld</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">sayHello</span><span class="params">()</span></span><br><span class="line">    </span>&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">'World!'</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyHelloWorld</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="comment">// 将SayWorld中的成员包含进来</span></span><br><span class="line">    <span class="keyword">use</span> <span class="title">SayWorld</span>;</span><br><span class="line">&#125;</span><br><span class="line"> </span><br><span class="line"><span class="variable">$xxoo</span> = <span class="keyword">new</span> MyHelloWorld();</span><br><span class="line"><span class="comment">// sayHello() 函数是来自 SayWorld 构件的</span></span><br><span class="line"><span class="variable">$xxoo</span>-&gt;sayHello();</span><br></pre></td></tr></table></figure>
-<p>Traits还有很多神奇的功能，比如包含多个Traits, 解决冲突，修改访问权限，为函数设置别名等等。<br>Traits中也同样可以包含Traits. 篇幅有限不能逐个举例，详情参见官网 [注].</p>
-<p>注：<a href="http://www.php.net/manual/zh/language.oop5.traits.php" target="_blank" rel="external">http://www.php.net/manual/zh/language.oop5.traits.php</a></p>
-<p>内置 Web 服务器</p>
-<p>PHP从5.4开始内置一个轻量级的Web服务器，不支持并发，定位是用于开发和调试环境。</p>
-<p>在开发环境使用它的确非常方便。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -S localhost:<span class="number">8000</span></span><br></pre></td></tr></table></figure>
-<p>这样就在当前目录建立起了一个Web服务器，你可以通过 <a href="http://localhost:8000/" target="_blank" rel="external">http://localhost:8000/</a> 来访问。<br>其中localhost是监听的ip，8000是监听的端口，可以自行修改。</p>
-<p>很多应用中，都会进行URL重写，所以PHP提供了一个设置路由脚本的功能:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -S localhost:<span class="number">8000</span> index.php</span><br></pre></td></tr></table></figure>
-<p>这样一来，所有的请求都会由index.php来处理。</p>
-<p>你还可以使用 XDebug 来进行断点调试。</p>
-<p>细节修改</p>
-<p>PHP5.4 新增了动态访问静态方法的方式：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$func</span> = <span class="string">"funcXXOO"</span>;</span><br><span class="line">A::&#123;<span class="variable">$func</span>&#125;();</span><br></pre></td></tr></table></figure>
-<p>新增在实例化时访问类成员的特征:</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="keyword">new</span> MyClass)-&gt;xxoo();</span><br></pre></td></tr></table></figure>
-<p>新增支持对函数返回数组的成员访问解析(这种写法在之前版本是会报错的)：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">print</span> func()[<span class="number">0</span>];</span><br></pre></td></tr></table></figure>
-<p>PHP5.5</p>
-<p>(2013起)</p>
-<p>yield</p>
-<p>yield关键字用于当函数需要返回一个迭代器的时候, 逐个返回值。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">number10</span><span class="params">()</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">for</span>(<span class="variable">$i</span> = <span class="number">1</span>; <span class="variable">$i</span> &lt;= <span class="number">10</span>; <span class="variable">$i</span> += <span class="number">1</span>)</span><br><span class="line">    <span class="keyword">yield</span> <span class="variable">$i</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>该函数的返回值是一个数组：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>, <span class="number">7</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">10</span>]</span><br></pre></td></tr></table></figure>
-<p>list() 用于 foreach</p>
-<p>可以用 list() 在 foreach 中解析嵌套的数组：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$array</span> = [</span><br><span class="line">[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],</span><br><span class="line">[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],</span><br><span class="line">];</span><br><span class="line"> </span><br><span class="line"><span class="keyword">foreach</span> (<span class="variable">$array</span> <span class="keyword">as</span> <span class="keyword">list</span>(<span class="variable">$a</span>, <span class="variable">$b</span>, <span class="variable">$c</span>))</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"&#123;$a&#125; &#123;$b&#125; &#123;$c&#125;\n"</span>;</span><br></pre></td></tr></table></figure>
-<p>结果：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span> <span class="number">2</span> <span class="number">3</span></span><br><span class="line"><span class="number">4</span> <span class="number">5</span> <span class="number">6</span></span><br></pre></td></tr></table></figure>
-<p>细节修改</p>
-<p>不推荐使用 mysql 函数，推荐使用 PDO 或 MySQLi, 参见前文。<br>不再支持Windows XP.</p>
-<p>可用 MyClass::class 取到一个类的完整限定名(包括命名空间)。</p>
-<p>empty() 支持表达式作为参数。</p>
-<p>try-catch 结构新增 finally 块。</p>
-<p>PHP5.6</p>
-<p>更好的常量</p>
-<p>定义常量时允许使用之前定义的常量进行计算：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> A = <span class="number">2</span>;</span><br><span class="line"><span class="keyword">const</span> B = A + <span class="number">1</span>;</span><br><span class="line"> </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">C</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">const</span> STR = <span class="string">"hello"</span>;</span><br><span class="line">    <span class="keyword">const</span> STR2 = <span class="keyword">self</span>::STR + <span class="string">", world"</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>允许常量作为函数参数默认值：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">func</span><span class="params">(<span class="variable">$arg</span> = C::STR2)</span></span></span><br></pre></td></tr></table></figure>
-<p>更好的可变函数参数</p>
-<p>用于代替 func_get_args()</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">add</span><span class="params">(...<span class="variable">$args</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="variable">$result</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$args</span> <span class="keyword">as</span> <span class="variable">$arg</span>)</span><br><span class="line">    <span class="variable">$result</span> += <span class="variable">$arg</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$result</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>同时可以在调用函数时，把数组展开为函数参数：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$arr</span> = [<span class="number">2</span>, <span class="number">3</span>];</span><br><span class="line">add(<span class="number">1</span>, ...<span class="variable">$arr</span>);</span><br><span class="line"><span class="comment">// 结果为 6</span></span><br></pre></td></tr></table></figure>
-<p>命名空间</p>
-<p>命名空间支持常量和函数：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> <span class="title">Name</span>\<span class="title">Space</span> &#123;</span><br><span class="line">    <span class="title">const</span> <span class="title">FOO</span> = 42;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">f</span><span class="params">()</span> </span>&#123; <span class="keyword">echo</span> <span class="keyword">__FUNCTION__</span>.<span class="string">"\n"</span>; &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">namespace</span> &#123;</span><br><span class="line">    <span class="title">use</span> <span class="title">const</span> <span class="title">Name</span>\<span class="title">Space</span>\<span class="title">FOO</span>;</span><br><span class="line">    <span class="keyword">use</span> <span class="title">function</span> <span class="title">Name</span>\<span class="title">Space</span>\<span class="title">f</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">echo</span> FOO.<span class="string">"\n"</span>;</span><br><span class="line">    f();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>2.重要的问题来了，迁移后居然发现无法编辑文章，折腾了一整天，后来才发现原来时PHP版本的问题，dedecms暂时还没有支持到PHP5.3的版本，所以在某些地方会出现问题。<br>例如：</p>
+<p>htmlspecialchars在php5.4默认为utf8编码，gbk编码字符串经 htmlspecialchars 转义后的中文字符串为空，所以对于GBK的版本来说会一直返回空，导致很多文章内容都为空，解决办法时</p>
+<p>解决办法：给htmlspecialchars添加ENT_COMPAT ,’GB2312’参数修改编码默认值。</p>
+<p>具体修改页面：</p>
+<p>1、dede/article_add.php 和 dede/article_edit.php<br>将<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$title</span> = htmlspecialchars(cn_substrR(<span class="variable">$title</span>,<span class="variable">$cfg_title_maxlen</span>));</span><br><span class="line">改成</span><br><span class="line"><span class="variable">$title</span> = htmlspecialchars(cn_substrR(<span class="variable">$title</span>,<span class="variable">$cfg_title_maxlen</span>),ENT_COMPAT ,<span class="string">'GB2312'</span>);</span><br></pre></td></tr></table></figure></p>
+<p>2、include/ckeditor/ckeditor_php5.php 138行<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">将 htmlspecialchars(<span class="variable">$value</span>)  替换为 htmlspecialchars(<span class="variable">$value</span>, ENT_COMPAT ,<span class="string">'GB2312'</span>)</span><br></pre></td></tr></table></figure></p>
+<p>测试，发布文章成功。</p>
 
       
     </div>
@@ -416,7 +304,7 @@
       
       
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/PHP/">PHP</a>
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/PHP/">PHP</a>
 	</div>
 
 
@@ -435,11 +323,11 @@
 
 
   
-    <article id="post-2013-12-php-fsock-rsync" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2014-09-vps-pptp-vpn" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2013/12/26/2013-12-php-fsock-rsync/" class="article-date">
-  	<time datetime="2013-12-26T11:27:00.000Z" itemprop="datePublished">2013-12-26</time>
+      <a href="/2014/09/23/2014-09-vps-pptp-vpn/" class="article-date">
+  	<time datetime="2014-09-23T02:30:00.000Z" itemprop="datePublished">2014-09-23</time>
 </a>
     </div>
   
@@ -452,7 +340,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2013/12/26/2013-12-php-fsock-rsync/">PHP中使用fsock实现伪异步</a>
+      <a class="article-title" href="/2014/09/23/2014-09-vps-pptp-vpn/">vps上搭建pptp的vpn</a>
     </h1>
   
 
@@ -461,27 +349,36 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>在Web开发中，我们经常会遇到这样一个场景：用户发起一个请求，处理这个请求的业务很简单，可能几毫秒或者几十毫秒就能完成；但是这个请求会影响另外一个业务系统，所以我们在处理完用户的请求后，不得不发起一个新的后台请求到相关的业务系统，而相关的业务系统响应我们的后台请求可能非常慢，这样就会延长我们的整个响应时间。</p>
-<p>  实例：我们的用户头像会保存到CDN，当用户更换头像的时候，上传写入可以很快的完成，但是调用CDN的purge接口可能要很久（好几秒），这样就会导致整个上传过程耗时很长。</p>
-<p>当然，要解决这个问题有很多办法；比如把purge接口的请求丢给消息队列，后台计划任务不停地消费消息队列发起purge请求；如果这么做确实可以解决问题，但是把整体架构复杂化了。</p>
-<p>不用消息队列，很多人就会想到用异步；但是项目使用的是PHP，它是顺序执行，不支持异步的，怎么办？</p>
-<p>拜读Laruence早期的文章：</p>
-<p>《PHP实现异步调用方法研究》<br>《使用fscok实现异步调用PHP》<br>根据文章中的介绍，果断采用fsockopen的方法：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">asyncGet</span><span class="params">(<span class="variable">$url</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="variable">$parts</span> = parse_url(<span class="variable">$url</span>);</span><br><span class="line">    <span class="variable">$fp</span> = fsockopen(</span><br><span class="line">        <span class="variable">$parts</span>[<span class="string">'host'</span>],</span><br><span class="line">        <span class="keyword">isset</span>(<span class="variable">$parts</span>[<span class="string">'port'</span>]) ? <span class="variable">$parts</span>[<span class="string">'port'</span>] : <span class="number">80</span>,</span><br><span class="line">        <span class="variable">$errno</span>, <span class="variable">$errstr</span>, <span class="number">3</span></span><br><span class="line">    );</span><br><span class="line">    <span class="variable">$out</span> = <span class="string">"GET "</span> . <span class="variable">$parts</span>[<span class="string">'path'</span>] . <span class="string">" HTTP/1.1\r\n"</span>;</span><br><span class="line">    <span class="variable">$out</span> .= <span class="string">"Host: "</span> . <span class="variable">$parts</span>[<span class="string">'host'</span>] . <span class="string">"\r\n"</span>;</span><br><span class="line">    <span class="variable">$out</span> .= <span class="string">"Connection: Close\r\n\r\n"</span>;</span><br><span class="line">    fwrite(<span class="variable">$fp</span>, <span class="variable">$out</span>);</span><br><span class="line">    fclose(<span class="variable">$fp</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$start</span> = microtime(<span class="keyword">true</span>);</span><br><span class="line">asyncGet(</span><br><span class="line">    <span class="string">'http://cdn.ljf.me/purge.php'</span></span><br><span class="line">);</span><br><span class="line"><span class="variable">$end</span> = microtime(<span class="keyword">true</span>);</span><br><span class="line"><span class="variable">$cost</span> = <span class="variable">$end</span> - <span class="variable">$start</span>;</span><br><span class="line"><span class="keyword">echo</span> <span class="string">"purge cdn cost: $cost s\n"</span>;</span><br></pre></td></tr></table></figure>
-<p>问题来了，无论如何发送请求，服务器都没有正常地清洗缓存（直接输入url访问是可以正常清洗的，排除purge接口本身的问题）。</p>
-<p>用WireShark抓到数据包来看，请求确实是有发出，也是正常的。</p>
-<p>为什么请求有发出，但是服务器并没有进行清洗CDN工作，问题可能出现在哪里？</p>
-<p>本地搭出一个测试环境。使用相同的脚本发完请求后，查看php-fpm的access日志没有找到刚才的请求，但是nginx的access是有这个请求的，状态码是499。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">127.0.0.1 - - [18/Dec/2013:11:57:57 +0800] "GET /purge.php HTTP/1.1" 499 0 "-" "-" "-"</span><br></pre></td></tr></table></figure>
-<p>在HTTP协议中没有直接定义499的状态码，这个状态码是nginx指定的。</p>
-<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">/* from ngx_http_request.h */</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line"> * HTTP does not define the code for the case when a client closed</span><br><span class="line"> * the connection while we are processing its request so we introduce</span><br><span class="line"> * own code to log such situation when a client has closed the connection</span><br><span class="line"> * before we even try to send the HTTP header to it</span><br><span class="line"> */</span><br><span class="line">#define NGX_HTTP_CLIENT_CLOSED_REQUEST     499</span><br></pre></td></tr></table></figure>
-<p>nginx对499的定义是”client has closed connection”，并且在这些情况下会返回这个状态码：</p>
-<p>upstream 在收到读写事件处理之前时发现连接不可用。<br>server处理请求未结束，而client提前关闭了连接。<br>upstream出错，执行next_upstream时发现连接不可用。<br>现在的问题是：我们要等nginx的upstream处理完并且把请求交给fastcgi之后，才能主动关闭连接，否则就不能正常的清洗CDN的缓存了。</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">asyncGet</span><span class="params">(<span class="variable">$url</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="variable">$parts</span> = parse_url(<span class="variable">$url</span>);</span><br><span class="line">    <span class="variable">$fp</span> = fsockopen(</span><br><span class="line">        <span class="variable">$parts</span>[<span class="string">'host'</span>],</span><br><span class="line">        <span class="keyword">isset</span>(<span class="variable">$parts</span>[<span class="string">'port'</span>]) ? <span class="variable">$parts</span>[<span class="string">'port'</span>] : <span class="number">80</span>,</span><br><span class="line">        <span class="variable">$errno</span>, <span class="variable">$errstr</span>, <span class="number">3</span></span><br><span class="line">    );</span><br><span class="line">    <span class="variable">$out</span> = <span class="string">"GET "</span> . <span class="variable">$parts</span>[<span class="string">'path'</span>] . <span class="string">" HTTP/1.1\r\n"</span>;</span><br><span class="line">    <span class="variable">$out</span> .= <span class="string">"Host: "</span> . <span class="variable">$parts</span>[<span class="string">'host'</span>] . <span class="string">"\r\n"</span>;</span><br><span class="line">    <span class="variable">$out</span> .= <span class="string">"Connection: Close\r\n\r\n"</span>;</span><br><span class="line">    fwrite(<span class="variable">$fp</span>, <span class="variable">$out</span>);</span><br><span class="line">    usleep(<span class="number">10000</span>);</span><br><span class="line">    fclose(<span class="variable">$fp</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>一个不安全的做法是在fclose之前，让当前的进程先睡眠一段时间；我这里设置为10毫秒，这10毫秒的延迟对我完成整个请求的影响不大，同时我也认为nginx一定能在10毫米内把请求转到fastcgi去执行。这个时间间隔很难把握，不能保证php一定有执行到。</p>
-<p>这种方式并不是真正的异步，只是很取巧的强制关闭连接而不等待服务器端响应。所以在Laruence的那2篇文章中，有2个问题：</p>
-<p>PHP使用fsock不能叫做异步，只是伪异步。<br>fwrite之后马上执行fclose，nginx会直接返回499。<br>Laruence这2篇博文都是08年写的，不知道当时是不是用apache做的测试。因为没有使用apache的场景，所以也就不打算用apache再验证一次。</p>
-<p>转载自：<a href="http://ljf.me/archives/use-sock-to-implement-the-async-in-php" target="_blank" rel="external">http://ljf.me/archives/use-sock-to-implement-the-async-in-php</a></p>
+        <p>pptp配置</p>
+<p>安装pptp</p>
+<p>用ubuntu就是安装东西快</p>
+<p>sudo apt-get -y update<br>sudo apt-get -y install pptpd<br>修改配置脚本</p>
+<p>配置一下dns</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">cat &gt;/etc/ppp/options.pptpd &lt;&lt;END</span><br><span class="line">name pptpd</span><br><span class="line">refuse-pap</span><br><span class="line">refuse-chap</span><br><span class="line">refuse-mschap</span><br><span class="line">require-mschap-v2</span><br><span class="line">require-mppe-<span class="number">128</span></span><br><span class="line">ms-dns <span class="number">8.8</span>.<span class="number">8.8</span></span><br><span class="line">ms-dns <span class="number">8.8</span>.<span class="number">4.4</span></span><br><span class="line">proxyarp</span><br><span class="line">lock</span><br><span class="line">nobsdcomp </span><br><span class="line">novj</span><br><span class="line">novjccomp</span><br><span class="line">nologfd</span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+<p>说明</p>
+<p>name pptpd（pptpd服务名，可以随便填写。）<br>refuse-pap（拒绝pap身份认证模式。）<br>refuse-chap（拒绝chap身份认证模式。）<br>refuse-mschap（拒绝mschap身份认证模式。）<br>require-mschap-v2（在端点进行连接握手时需要使用微软的 mschap-v2 进行自身验证。）<br>require-mppe-128（MPPE 模块使用 128 位加密。）<br>ms-dns 8.8.8.8 (ppp 为 Windows 客户端提供 DNS 服务器 IP 地址。)<br>proxyarp (建立 ARP 代理键值。)<br>nodefaultroute（不替换默认路由）<br>debug（开启调试模式，相关信息记录在 /var/logs/message 中。）<br>lock（锁定客户端 PTY 设备文件。）<br>nobsdcomp (禁用 BSD 压缩模式。)<br>还有ip</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">cat &gt;/etc/pptpd.conf &lt;&lt;END</span><br><span class="line">option /etc/ppp/options.pptpd</span><br><span class="line">logwtmp</span><br><span class="line">localip <span class="number">192.168</span>.<span class="number">2.1</span></span><br><span class="line">remoteip <span class="number">192.168</span>.<span class="number">2.10</span>-<span class="number">100</span></span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+<p>增加路由转发</p>
+<p>ipv4转发</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cat &gt;&gt; /etc/sysctl.conf &lt;&lt;END</span><br><span class="line">net.ipv4.ip_forward=<span class="number">1</span></span><br><span class="line">END</span><br><span class="line">sysctl -p</span><br></pre></td></tr></table></figure>
+<p>修改iptables</p>
+<p>备份当前iptables</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables-save &gt; /etc/iptables.down.rules</span><br></pre></td></tr></table></figure>
+<p>修改iptable NAT转发</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -t nat -A POSTROUTING <span class="operator">-s</span> <span class="number">192.168</span>.<span class="number">2.0</span>/<span class="number">24</span> -o eth0 -j MASQUERADE</span><br></pre></td></tr></table></figure>
+<p>设置MTU</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables -I FORWARD <span class="operator">-s</span> <span class="number">192.168</span>.<span class="number">2.0</span>/<span class="number">24</span> -p tcp --syn -i ppp+ -j TCPMSS --set-mss <span class="number">1300</span></span><br></pre></td></tr></table></figure>
+<p>保存新iptables</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">iptables-save &gt; /etc/iptables.up.rules</span><br></pre></td></tr></table></figure>
+<p>重启后继续有效</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cat &gt;&gt;/etc/ppp/pptpd-options&lt;&lt;EOF</span><br><span class="line">pre-up iptables-restore &lt; /etc/iptables.up.rules</span><br><span class="line">post-down iptables-restore &lt; /etc/iptables.down.rules</span><br><span class="line">EOF</span><br></pre></td></tr></table></figure>
+<p>增加用户</p>
+<p>增加帐号密码都是test的用户</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">cat &gt;/etc/ppp/chap-secrets &lt;&lt;END</span><br><span class="line"><span class="built_in">test</span> pptpd <span class="built_in">test</span> *</span><br><span class="line">END</span><br></pre></td></tr></table></figure>
+<p>重启服务</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/etc/init.d/pptpd restart</span><br><span class="line">netstat -lntp</span><br></pre></td></tr></table></figure>
+<p>自动脚本</p>
+<p>wget -c <a href="https://raw2.github.com/suyan/Scripts/master/Setup/pptp.sh" target="_blank" rel="external">https://raw2.github.com/suyan/Scripts/master/Setup/pptp.sh</a></p>
 
       
     </div>
@@ -491,7 +388,7 @@
       
       
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/PHP/">PHP</a>
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/Linux/">Linux</a>
 	</div>
 
 
@@ -510,11 +407,11 @@
 
 
   
-    <article id="post-2013-11-nginx-fpm-file-not-find" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2014-05-vim-vundle-YouCompleteMe" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2013/11/22/2013-11-nginx-fpm-file-not-find/" class="article-date">
-  	<time datetime="2013-11-22T02:29:00.000Z" itemprop="datePublished">2013-11-22</time>
+      <a href="/2014/07/15/2014-05-vim-vundle-YouCompleteMe/" class="article-date">
+  	<time datetime="2014-07-15T07:25:00.000Z" itemprop="datePublished">2014-07-15</time>
 </a>
     </div>
   
@@ -527,7 +424,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2013/11/22/2013-11-nginx-fpm-file-not-find/">ubuntu下配置nginx+php-fpm的file not find问题</a>
+      <a class="article-title" href="/2014/07/15/2014-05-vim-vundle-YouCompleteMe/">Vim+Vundle+YouCompleteMe</a>
     </h1>
   
 
@@ -536,10 +433,26 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>第一种情况下sudo vim /etc/nginx/sites-enable/default下配置</p>
-<figure class="highlight nginx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="title">location</span> <span class="regexp">~ \.php$</span> &#123;</span><br><span class="line">    <span class="title">try_files</span> <span class="variable">$uri</span> =<span class="number">404</span>;</span><br><span class="line">    <span class="title">fastcgi_split_path_info</span><span class="regexp"> ^(.+\.php)(/.+)$</span>;</span><br><span class="line">    <span class="title">fastcgi_pass</span> <span class="url">unix:/var/run/php5-fpm.sock</span>;</span><br><span class="line">    <span class="title">fastcgi_index</span> index.php;</span><br><span class="line">    <span class="title">fastcgi_read_timeout</span> <span class="number">300</span>;</span><br><span class="line">    <span class="title">fastcgi_param</span> SCRIPT_FILENAME <span class="variable">$document_root</span><span class="variable">$fastcgi_script_name</span>;</span><br><span class="line">    <span class="title">include</span> fastcgi_params;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>第二种情况就是 /etc/php5/fpm/pool.d/www.conf</p>
-<p>文件配置下user = XXX必须与你/etc/nginx/nginx.conf的配置下user =XXX 一置，而且XXX必须是有访问权限。</p>
+        <p>准备</p>
+<p>（1）YouCompleteMe插件要求Vim 版本在7.3.584及以上，而Ubuntu12.04源中的Vim已经比较老了，所以需要编译源码手动更新VIM的版本。<br>（2）Vundle是一个新生代vim插件管理器，使用git进行插件安装和更新。插件管理器的好处是：使用简单，自动化管理vim的插件。让你的.vim文件夹远离混乱不堪的窘境，从此一手.vimrc走天下。<br>（3）Clang+LLVM是Apple公司资助的一个项目，YouCompleteMe精确的补全功能完全依赖于Clang的代码解析。我们需要安装好Clang 3.2+以便为YCM提供支持。<br>（4）SVN和Git。用于从代码库中检出源代码。在Ubuntu下这两个软件的安装都非常简单，使用apt-get命令即可安装完成。<br>（5）YouCompleteMe和Syntastic这两个插件都是配合使用的。YCM不用再说，Syntastic用于源码的实时检查。具体效果如同Eclipse一样，在代码编写的过程中即可实时报告语法错误。</p>
+<ol>
+<li>编译源码更新VIM<br> First, install all the prerequisite libraries, including Mercurial. For a Debian-like Linux distribution like Ubuntu, that would be the following:</li>
+</ol>
+<p>sudo apt-get install libncurses5-dev libgnome2-dev libgnomeui-dev libgtk2.0-dev libatk1.0-dev libbonoboui2-dev \<br>libcairo2-dev libx11-dev libxpm-dev libxt-dev python-dev ruby-dev mercurial<br>Remove vim if you have it already,</p>
+<p>sudo apt-get remove vim vim-runtime gvim   #这一步可以不做<br>On Ubuntu 12.04.2 you probably have to remove these packages as well,<br>sudo apt-get remove vim-tiny vim-common vim-gui-common #同上一条命令，这一步可以不做<br>    Once everything is installed, getting the source is easy. If you’re not using vim 7.3, make sure to set the VIMRUNTIMEDIR variable correctly below (for instance, with vim 7.4a, use /usr/share/vim/vim74a):</p>
+<p>cd ~/temp<br>hg clone <a href="https://code.google.com/p/vim/" target="_blank" rel="external">https://code.google.com/p/vim/</a><br>cd vim<br>./configure –with-features=huge –enable-rubyinterp –enable-pythoninterp –with-python-config-dir=/usr/lib/python2.7-config \<br>–enable-perlinterp –enable-gui=gtk2 –enable-cscope –prefix=/usr<br>make VIMRUNTIMEDIR=/usr/share/vim/vim74<br>sudo make install<br>If you wish to support plugins that require Lua, you may also wish to add,<br>–enable-luainterp<br>    Set vim as your default editor with update-alternatives,</p>
+<p>sudo update-alternatives –install /usr/bin/editor editor /usr/bin/vim 1<br>sudo update-alternatives –set editor /usr/bin/vim<br>sudo update-alternatives –install /usr/bin/vi vi /usr/bin/vim 1<br>sudo update-alternatives –set vi /usr/bin/vim<br>    Double check that you are in fact running the new Vim binary by looking at the output of vim –version.</p>
+<ol>
+<li><p>安装Vundle<br>（1）安装Vundle<br>Vundle托管在Github上，下载Vundle需要使用到git来检出源代码，<br>git clone <a href="https://github.com/gmarik/vundle.git" target="_blank" rel="external">https://github.com/gmarik/vundle.git</a> ~/.vim/bundle/vundle<br>以上命令直接将源代码检出到了~/.vim/bundle/vundle这个目录下。下载完了vundle后，需要配置.vimrc文件，我的配置如下（摘自github），<br><img src="https://app.yinxiang.com/shard/s24/res/118bfd57-b25b-48b0-8219-0a7e1096d015.jpg?resizeSmall&amp;width=1275" alt="p1"><br>配置中每个Bundle声明一个要用Vundle安装的插件。当需要的vim插件托管在Github上，例如，可写成Bundle ‘scrooloose/syntastic’；当插件在www.vim.org上面时，我们需要写明该插件的名称，还要加上.vim扩展名，否则vundle无法更新该插件。基本上这两种情况可以满足我们大部分人的需要了。<br>（2）Vundle的使用——安装/卸载插件<br>打开一个vim窗口，执行命令:BundleInstall，接下来Vundle会自动去网上下载.vimrc里用Bundle声明的插件，并把能安装的都安装好（安装到bundle文件夹下），在此过程中，Vundle还会自动执行:helptags命令，因此我们可以直接在vim中查看插件的帮助文档。要删除一个插件也很简单，先在~/.vimrc中移除该插件的Bundle声明，然后进入vim执行命令:BundleClean，Vundle将自动清除bundle文件夹下的该插件。</p>
+</li>
+<li><p>安装YouCompleteMe<br>使用Vundle安装<br> 按照上图中的配置——在.vimrc中加入Bundle ‘Valloric/YouCompleteMe’，保存退出，执行，<br>vim<br>:BundleInstall<br>这样Vundle就会自动去下载并安装.vimrc中Bundle声明的插件（除非已安装）。</p>
+</li>
+<li><p>配置YouCompleteMe<br>安装好之后，首先需要做配置，<br>cd ~/.vim/bundle/YouCompleteMe</p>
+</li>
+</ol>
+<p>./install.sh –clang-completer<br> 这个过程会自动安装clang，从而在~/pxf/.vim/bundle/YouCompleteMe/python目录下产生libclang.so文件。<br>在.vimrc中配置，<br><figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">""""""""""""""""""""""""""""""</span><br><span class="line">" ycm setting</span><br><span class="line">""""""""""""""""""""""""""""""</span><br><span class="line">let g:ycm_global_ycm_extra_conf='~/.ycm_extra_conf.py'</span><br><span class="line">let g:ycm_collect_identifiers_from_tag_files = 1</span><br><span class="line">let g:ycm_seed_identifiers_with_syntax = 1</span><br><span class="line">let g:ycm_confirm_extra_conf=0</span><br><span class="line">let g:ycm_key_invoke_completion = '&lt;C-/&gt;'</span><br><span class="line">nnoremap &lt;F5&gt; :YcmForceCompileAndDiagnostics&lt;CR&gt;</span><br></pre></td></tr></table></figure></p>
+<p>其中ycm_global_ycm_extra_conf非常重要，里面设定ycm的搜索头文件路径。.ycm_extra_conf.py文件可以针对具体的代码工程建一个，如果不这么做，那么vim会按照.vimrc中设定的路径去找.ycm_extra_conf.py。在这里，我将模板~/.vim/bundle/YouCompleteMe/cpp/ycm/.ycm_extra_conf.py拷贝一份到~/.ycm_extra_conf.py，日后自己的修改都在拷贝的文件中进行。<br>        实际使用中，我们需要配置~/.ycm_extra_conf.py这个文件，需要做改动的就是文件中的flags部分——添加我们的库文件，从而提供给ycm做自动补全。使用-isystem标志添加系统的头文件进行解析，而-I标志用于添加第三方的头文件进行解析，一般要在该文件中的flags = [后面添加 ‘-isystem’,’/usr/include’,。但是模板中已经有了该配置，所以就没做改动。</p>
+<p>Trouble Shooting<br>        安装YCM的过程挺坎坷的，我也试过编译YCM源码的形式来安装，但安装好了却没有效果，下面是我在这个过程中碰到的一些问题，及其解决方案。<br>        在cmake配置的时候，可能会遇到找不到PythonLibs的报错，这是因为没有安装python-dev，解决方案：<br>sudo apt-get install python-dev<br>        编译llvm-clang源码的时候，很容易出错，我采用了另一种方法：<br>sudo apt-get install clang-3.3 clang-3.3-doc</p>
 
       
     </div>
@@ -549,7 +462,7 @@
       
       
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/Linux/">Linux</a>
 	</div>
 
 
@@ -568,11 +481,11 @@
 
 
   
-    <article id="post-2013-11-phpmyadmin-mcrypt-extension-is-missing" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2014-05-php-arithmetic" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2013/11/22/2013-11-phpmyadmin-mcrypt-extension-is-missing/" class="article-date">
-  	<time datetime="2013-11-22T02:21:00.000Z" itemprop="datePublished">2013-11-22</time>
+      <a href="/2014/05/24/2014-05-php-arithmetic/" class="article-date">
+  	<time datetime="2014-05-24T15:52:00.000Z" itemprop="datePublished">2014-05-24</time>
 </a>
     </div>
   
@@ -585,7 +498,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2013/11/22/2013-11-phpmyadmin-mcrypt-extension-is-missing/">phpmyadmin页面提示mcrypt extension is missing错误解决</a>
+      <a class="article-title" href="/2014/05/24/2014-05-php-arithmetic/">php 两个无限位数长度数的加减乘除算法</a>
     </h1>
   
 
@@ -594,12 +507,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>这是一个mcrypt文件位置错误的bug</p>
-<p>详细的bug信息请参考以下网址：</p>
-<p><a href="https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035</a></p>
-<p>#mv -i /etc/php5/conf.d/mcrypt.ini /etc/php5/mods-available/</p>
-<p>#sudo php5enmod mcrypt</p>
-<p>#/etc/init.d/apache2 restart</p>
+        <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="comment">//用字符串存放需要计算的数字</span></span><br><span class="line"><span class="variable">$var1</span> = <span class="string">'1812333333333333333333333333333312312312365465115168798845654646546541654623645654654132165798498799935965878749878990802045729820438846724720077549820225200070877958874065976960871699930588877830002524992671885461625646546546546546546126154654654'</span>;</span><br><span class="line"><span class="variable">$var2</span> = <span class="string">'2364565465413216579849879812363254541654565746871239648712653441235461243465142635441623141233241132234461523446512341236454126344612534'</span>;</span><br><span class="line"><span class="variable">$result</span> = countNum(<span class="variable">$var1</span>, <span class="variable">$var2</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$maxLength</span> = count(<span class="variable">$result</span>);</span><br><span class="line"><span class="keyword">for</span>( <span class="variable">$num</span> = <span class="variable">$maxLength</span> - <span class="number">1</span>; <span class="variable">$num</span> &gt;= <span class="number">0</span>; <span class="variable">$num</span>-- )&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="variable">$result</span>[<span class="variable">$num</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span><br><span class="line"> * <span class="doctag">@name</span> 计算两个数的加法</span><br><span class="line"> * <span class="doctag">@author</span> geekzhumail<span class="doctag">@gmail</span>.com</span><br><span class="line"> * <span class="doctag">@since</span> 2014-03-16</span><br><span class="line"> * <span class="doctag">@param</span> var1 第一个数字</span><br><span class="line"> * <span class="doctag">@param</span> var2 第二个数字</span><br><span class="line"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">countNum</span><span class="params">( <span class="variable">$var1</span>, <span class="variable">$var2</span> )</span></span>&#123;</span><br><span class="line">    <span class="variable">$result</span> = <span class="keyword">array</span>();<span class="comment">//结果</span></span><br><span class="line">    <span class="variable">$var1Length</span> = strlen( <span class="variable">$var1</span> );</span><br><span class="line">    <span class="variable">$var2Length</span> = strlen( <span class="variable">$var2</span> );</span><br><span class="line">    <span class="variable">$maxLength</span> = (<span class="variable">$var1Length</span> &gt;= <span class="variable">$var2Length</span> )?<span class="variable">$var1Length</span>:<span class="variable">$var2Length</span>;</span><br><span class="line">    <span class="variable">$temp</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="variable">$num</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>( <span class="keyword">true</span> )&#123;</span><br><span class="line">        <span class="variable">$temp1</span> = (<span class="variable">$num</span> &gt;= <span class="variable">$var1Length</span> )?<span class="number">0</span>:<span class="variable">$var1</span>[<span class="variable">$var1Length</span> - <span class="variable">$num</span> - <span class="number">1</span>];</span><br><span class="line">        <span class="variable">$temp2</span> = (<span class="variable">$num</span> &gt;= <span class="variable">$var2Length</span> )?<span class="number">0</span>:<span class="variable">$var2</span>[<span class="variable">$var2Length</span> - <span class="variable">$num</span> - <span class="number">1</span>];</span><br><span class="line">        <span class="variable">$temp</span> += <span class="variable">$temp1</span> + <span class="variable">$temp2</span>;</span><br><span class="line">        <span class="variable">$temp</span> = str_split(<span class="variable">$temp</span>);</span><br><span class="line">        <span class="comment">//var_dump($temp);</span></span><br><span class="line">        <span class="comment">//exit;</span></span><br><span class="line">        <span class="variable">$result</span>[<span class="variable">$num</span>] = ( count( <span class="variable">$temp</span> ) &gt; <span class="number">1</span> )?<span class="variable">$temp</span>[<span class="number">1</span>]:<span class="variable">$temp</span>[<span class="number">0</span>];</span><br><span class="line">        <span class="variable">$temp</span> = ( count( <span class="variable">$temp</span> ) &gt; <span class="number">1</span> )?<span class="variable">$temp</span>[<span class="number">0</span>]:<span class="number">0</span>;</span><br><span class="line">        <span class="variable">$num</span>++;</span><br><span class="line">        <span class="keyword">if</span>( <span class="variable">$num</span> == <span class="variable">$maxLength</span> )&#123;</span><br><span class="line">            <span class="keyword">if</span>( <span class="variable">$temp</span> != <span class="number">0</span> ) &#123;</span><br><span class="line">                <span class="variable">$result</span>[<span class="variable">$num</span>] = <span class="variable">$temp</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$result</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
       
     </div>
@@ -609,7 +517,7 @@
       
       
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/PHP/">PHP</a>
 	</div>
 
 
@@ -628,11 +536,11 @@
 
 
   
-    <article id="post-2013-10-multi-process-write" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2014-05-linux-sogou" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2013/10/27/2013-10-multi-process-write/" class="article-date">
-  	<time datetime="2013-10-27T13:17:00.000Z" itemprop="datePublished">2013-10-27</time>
+      <a href="/2014/05/24/2014-05-linux-sogou/" class="article-date">
+  	<time datetime="2014-05-24T15:51:00.000Z" itemprop="datePublished">2014-05-24</time>
 </a>
     </div>
   
@@ -645,7 +553,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2013/10/27/2013-10-multi-process-write/">多进程写文件</a>
+      <a class="article-title" href="/2014/05/24/2014-05-linux-sogou/">linux下安装搜狗输入法</a>
     </h1>
   
 
@@ -654,7 +562,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 多进程写文件</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">write_file</span><span class="params">(<span class="variable">$filename</span>, <span class="variable">$content</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="variable">$lock</span> = <span class="variable">$filename</span> . <span class="string">'.lck'</span>;<span class="comment">//与文件名关联的加锁文件</span></span><br><span class="line">    <span class="variable">$write_length</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span>( file_exists(<span class="variable">$lock</span>) ) &#123;<span class="comment">//判断是否已存在该锁，存在则证明已有进程在写文件，休眠100毫秒</span></span><br><span class="line">            usleep(<span class="number">100</span>);<span class="comment">//休眠100毫秒</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            touch(<span class="variable">$lock</span>);<span class="comment">//加锁</span></span><br><span class="line">            <span class="variable">$write_length</span> = file_put_contents(<span class="variable">$filename</span>, <span class="variable">$content</span>, FILE_APPEND);<span class="comment">//写文件</span></span><br><span class="line">            <span class="keyword">break</span>;<span class="comment">//退出循环</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>( file_exists(<span class="variable">$lock</span>) ) &#123;</span><br><span class="line">        unlink(<span class="variable">$lock</span>);<span class="comment">//解锁</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$write_length</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">ubuntu下安装sogoupinyin</span><br><span class="line">sudo add-apt-repository ppa:fcitx-team/nightly</span><br><span class="line">sudo apt-get update</span><br><span class="line">sudo apt-get install fcitx-sogoupinyin</span><br></pre></td></tr></table></figure>
+<p>如果找不到fcitx-sogoupinyin，可以在<a href="https://aur.archlinux.org/packages/fcitx-sogoupinyin/" target="_blank" rel="external">https://aur.archlinux.org/packages/fcitx-sogoupinyin/</a> 下载deb安装。</p>
 
       
     </div>
@@ -664,7 +573,7 @@
       
       
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/Linux/">Linux</a>
 	</div>
 
 
@@ -683,11 +592,11 @@
 
 
   
-    <article id="post-2013-10-php-foreach-object" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2014-05-linux-grub-repair" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2013/10/27/2013-10-php-foreach-object/" class="article-date">
-  	<time datetime="2013-10-27T13:12:00.000Z" itemprop="datePublished">2013-10-27</time>
+      <a href="/2014/05/24/2014-05-linux-grub-repair/" class="article-date">
+  	<time datetime="2014-05-24T15:50:00.000Z" itemprop="datePublished">2014-05-24</time>
 </a>
     </div>
   
@@ -700,7 +609,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2013/10/27/2013-10-php-foreach-object/">使对象可以像数组一样进行foreach循环，要求属性必须是私有。(Iterator模式的PHP5实现，写一类实现Iterator接口)</a>
+      <a class="article-title" href="/2014/05/24/2014-05-linux-grub-repair/">linux grub 修复注意</a>
     </h1>
   
 
@@ -709,16 +618,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>使对象可以像数组一样进行foreach循环，要求属性必须是私有。</p>
-<p>刚接触到题的时候，我也没有考虑到Iterator模式，试了几个一般想法，失败以后。。。。就直接去翻看了foreach的源码实现，期望发现foreach处理对象的时候是否有什么特殊性，可以做为突破口。</p>
-<p>跟踪了半天以后发现了核心逻辑中的一个奇怪的switch:</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (zend_iterator_unwrap(<span class="built_in">array</span>, &amp;iter TSRMLS_CC)) &#123;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">case</span> ZEND_ITER_INVALID:</span><br><span class="line">               .....</span><br><span class="line">               <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">case</span> ZEND_ITER_PLAIN_OBJECT: &#123;</span><br><span class="line">                ......</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">     <span class="keyword">case</span> ZEND_ITER_PLAIN_ARRAY:</span><br><span class="line">            .....</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> ZEND_ITER_OBJECT:</span><br><span class="line">            ......</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>从这个结构，我们可以看到，对象分为ZEND_ITER_OBJECT和ZEND_ITER_PLAIN_OBJECT, 这是什么意思呢？</p>
-<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ZEND_API <span class="keyword">enum</span> zend_object_iterator_kind <span class="title">zend_iterator_unwrap</span><span class="params">(</span><br><span class="line">    zval *array_ptr, zend_object_iterator **iter TSRMLS_DC)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (Z_TYPE_P(array_ptr)) &#123;</span><br><span class="line">        <span class="keyword">case</span> IS_OBJECT:</span><br><span class="line">            <span class="keyword">if</span> (Z_OBJ_HT_P(array_ptr) == &amp;iterator_object_handlers) &#123;</span><br><span class="line">                *iter = (zend_object_iterator *)zend_object_store_get_object(array_ptr TSRMLS_CC);</span><br><span class="line">                <span class="keyword">return</span> ZEND_ITER_OBJECT;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (HASH_OF(array_ptr)) &#123;</span><br><span class="line">                <span class="keyword">return</span> ZEND_ITER_PLAIN_OBJECT;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> ZEND_ITER_INVALID;</span><br><span class="line">        <span class="keyword">case</span> IS_ARRAY:</span><br><span class="line">            <span class="keyword">if</span> (HASH_OF(array_ptr)) &#123;</span><br><span class="line">                <span class="keyword">return</span> ZEND_ITER_PLAIN_ARRAY;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> ZEND_ITER_INVALID;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">return</span> ZEND_ITER_INVALID;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这就要讲到PHP的内置接口Iterator了，PHP5开始支持了接口， 并且内置了Iterator接口， 所以如果你定义了一个类，并实现了Iterator接口，那么你的这个类对象就是ZEND_ITER_OBJECT,否则就是 ZEND_ITER_PLAIN_OBJECT.</p>
-<p>对于ZEND_ITER_PLAIN_OBJECT的类，foreach会通过HASH_OF获取该对象的默认属性数组，然后对该数组进行foreach.<br>而对于ZEND_ITER_OBJECT的类对象，则会通过调用对象实现的Iterator接口相关函数来进行foreach， 所以， 对于这道笔试题， 可以作出如下的答案：</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">sample</span> <span class="keyword">implements</span> <span class="title">Iterator</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_items </span>= <span class="keyword">array</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>);</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                  ;<span class="comment">//void</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">rewind</span><span class="params">()</span> </span>&#123; reset(<span class="variable">$this</span>-&gt;_items); &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">current</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> current(<span class="variable">$this</span>-&gt;_items); &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">key</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> key(<span class="variable">$this</span>-&gt;_items); &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">next</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> next(<span class="variable">$this</span>-&gt;_items); &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">valid</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> ( <span class="variable">$this</span>-&gt;current() !== <span class="keyword">false</span> ); &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$sa </span>= <span class="keyword">new</span> sample();</span><br><span class="line"><span class="keyword">foreach</span>(<span class="variable">$sa as </span><span class="variable">$key </span>=&gt; <span class="variable">$val</span>)&#123;</span><br><span class="line">    <span class="keyword">print</span> <span class="variable">$key </span>. <span class="string">"=&gt;"</span> .<span class="variable">$val</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>转载：<a href="http://www.laruence.com/2008/10/31/574.html" target="_blank" rel="external">http://www.laruence.com/2008/10/31/574.html</a></p>
+        <p>在用livecd 修复ubuntu引导的时候，<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">sudo -i</span><br><span class="line">fdisk <span class="operator">-l</span></span><br><span class="line">mount /dev/sda* /mnt</span><br><span class="line">grub-install --boot-directory /mnt /dev/sda</span><br><span class="line">如果linux系统是分区安装的话要记录挂载所有的分区，例如</span><br><span class="line">mount /dev/sda7 /mnt</span><br><span class="line">mount /dev/sda3 /mnt/boot</span><br><span class="line">mount /dev/sda8 /mnt/home</span><br></pre></td></tr></table></figure></p>
 
       
     </div>
@@ -728,7 +628,7 @@
       
       
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a>
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/Linux/">Linux</a>
 	</div>
 
 
@@ -747,11 +647,11 @@
 
 
   
-    <article id="post-2013-10-apache-rewrite-403" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2014-05-linux-xiaomi-wifi-driver" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2013/10/22/2013-10-apache-rewrite-403/" class="article-date">
-  	<time datetime="2013-10-21T16:24:00.000Z" itemprop="datePublished">2013-10-22</time>
+      <a href="/2014/05/24/2014-05-linux-xiaomi-wifi-driver/" class="article-date">
+  	<time datetime="2014-05-24T15:50:00.000Z" itemprop="datePublished">2014-05-24</time>
 </a>
     </div>
   
@@ -764,7 +664,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2013/10/22/2013-10-apache-rewrite-403/">apache rewriteEngine开启后出现403</a>
+      <a class="article-title" href="/2014/05/24/2014-05-linux-xiaomi-wifi-driver/">linux下安装小米随身wifi的驱动，用来开启无线网卡功能</a>
     </h1>
   
 
@@ -773,8 +673,14 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>apache伪静态URL配置RewriteEngine on出现403错误</p>
-<p>解决方案：<br>1.在apache配置文件httpd.conf中，修改两项配置: Options FollowSymLinks、AllowOverride All。<br>2.把Options Indexes注释掉，也就是前面加个“#”，变成#Options Indexes</p>
+        <p>随身wifi这东西说白了都是无线网卡，就是厂商改了pid让你系统不能自动识别加载驱动。导致只能用他的软件只能用来当AP。可恨的是从来不考虑linux下使用的情况，只能自己动手。<br>其实找到芯片就可以了。安装芯片厂商的驱动。<br>我手头有个小米wifi，其实买来好玩，基本从来不用。说实话弱爆了。插在usb口突出那么多，比之之前我买的tplink的无线网卡大多了。</p>
+<p>小米的芯片也是ralink的MT7601U，去官网下载最新linux驱动就可以了。<br>只是在修改common/rtusb_dev_id.c文件时，请添加小米wifi的pid<br>{USB_DEVICE(0x2717,0x4106)},<br>然后<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">make</span><br><span class="line">make install</span><br><span class="line">modprobe mt7601Usta</span><br></pre></td></tr></table></figure></p>
+<p>就行了。</p>
+<p>再更新：<br>ubuntu升级为了14.04，但是发现怎么小米 wifi 驱动用不了，编译驱动发现报错，原来驱动不兼容，所以查了查资料参考<a href="http://blog.csdn.net/michaelbaker/article/details/23597741" target="_blank" rel="external">http://blog.csdn.net/michaelbaker/article/details/23597741</a><br>但是这位作者中间可能笔误写错了两行。<br>在前面修改PID之后，修改驱动代码里的/os/linux/rt_linux.c 的1211行和1222行的<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">            pOSFSInfo-&gt;fsuid = current_fsuid();</span><br><span class="line">                pOSFSInfo-&gt;fsgid = current_fsgid();</span><br></pre></td></tr></table></figure></p>
+<p>把他们两个改为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pOSFSInfo-&gt;fsuid = *(<span class="keyword">int</span> *)&amp;current_fsuid();</span><br><span class="line"></span><br><span class="line">pOSFSInfo-&gt;fsgid = *(<span class="keyword">int</span> *)&amp;current_fsgid();</span><br></pre></td></tr></table></figure>
+<p>似乎是这两个变量在新的系统里返回值不是整型的缘故(?)</p>
+<p>然后按原来步骤在14.04下就能正常了。</p>
 
       
     </div>
@@ -784,7 +690,7 @@
       
       
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/Linux/">Linux</a>
 	</div>
 
 
@@ -803,11 +709,11 @@
 
 
   
-    <article id="post-2013-10-process-port-80-occupancy" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2014-05-ubuntu-startup-power" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2013/10/21/2013-10-process-port-80-occupancy/" class="article-date">
-  	<time datetime="2013-10-21T10:50:00.000Z" itemprop="datePublished">2013-10-21</time>
+      <a href="/2014/05/24/2014-05-ubuntu-startup-power/" class="article-date">
+  	<time datetime="2014-05-24T15:47:00.000Z" itemprop="datePublished">2014-05-24</time>
 </a>
     </div>
   
@@ -820,7 +726,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2013/10/21/2013-10-process-port-80-occupancy/">80端口被PID为4的系统进程所占用</a>
+      <a class="article-title" href="/2014/05/24/2014-05-ubuntu-startup-power/">ubuntu 开机自启动服务 和 GUI 软件</a>
     </h1>
   
 
@@ -829,9 +735,49 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>装apache的时候80端口被PID为4的系统进程所占用 由于工作中需要直接从MySQL后台读取数据，所以安装了PHPnow，装的过程中提示Apache安装失败，80端口被占用。 在cmd中输入netstat –ano命令，发现80端口被一个PID为4的服务所占用，打开任务管理器，发现PID为4的进程为系统进程，其描述信息为NT Kernel &amp; System，在服务里面又找不到PID为4的服务，所以没法停掉服务。 这种情况基本上就是谷歌和度娘的事了，搜出来的结果大部分不靠谱，要么说迅雷等下载软件会占用80端口，要么说IIS占用了该端口。事实上，我机器上这些服务都没启动。那么究竟是什么原因呢？还好，偶然间看到一个页面说MS SQL Server的报表服务会占用80端口（写日志的时候已经找不到链接了，恕未引用），于是打开windows服务，找到SQL Server Reporting Services (MYSQLSERVER)，把它停掉，再安装PHPnow，发现果然能顺利安装。 以后遇到类似问题，关掉SQL Server Reporting Services (MYSQLSERVER)也可以作为一种尝试了。</p>
-<p>一些查看端口占用和关闭端口的命令，已443端口为例</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">netstat -ano|findstr <span class="string">"443"</span> //搜索<span class="number">443</span>端口占用情况，并找到进程ID</span><br><span class="line">TCP <span class="number">0.0</span>.<span class="number">0.0</span>:<span class="number">443</span> <span class="number">0.0</span>.<span class="number">0.0</span>:<span class="number">0</span> LISTENING <span class="number">720</span> //找到PID为<span class="number">720</span></span><br><span class="line">UDP <span class="number">0.0</span>.<span class="number">0.0</span>:<span class="number">59443</span> *:* <span class="number">7584</span></span><br><span class="line">-----------------------------------------------</span><br><span class="line">tasklist|findstr <span class="string">"720"</span> //查找PID为<span class="number">720</span>对应的进程名</span><br><span class="line">QQDownload.exe <span class="number">720</span> Console <span class="number">1</span> <span class="number">56</span>,<span class="number">156</span> K //找到是QQ旋风占用，结束掉进程。OK</span><br></pre></td></tr></table></figure>
+        <p>每天上班的第一件事就是开电脑 ， 开一些工作上必须用的软件 或者一些服务 ， 每天 都要动你的鼠标 去打开 应用程序 或者 在terminal 上敲命令启动 服务，这样 未免 太麻烦了 ，一点也不 DRY ， 那就 把你每天必备的 服务 ， 都放在 rc.local中 或者使用 update-rc.d ， GUI 软件放到 startup applications 中 随着 开机一起启动吧</p>
+<p>开机 自启动服务</p>
+<p>使用 rc.local</p>
+<p>1,把你需要 启动的 程序都放到 /etc/rc.local 中，注意写到 exit 0 前面</p>
+<p>2,默认 ubuntu 的 shell 是 dash ,据说 是为了 提高 开机速度</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ ls <span class="operator">-l</span> /bin/sh</span><br><span class="line">lrwxrwxrwx <span class="number">1</span> root root <span class="number">4</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> /bin/sh -&gt; dash</span><br></pre></td></tr></table></figure>
+<p>但是 dash 是一个 对脚本 兼容性 和 容错性 非常差的 shell,修改 rc.local 用 bash 来执行不要使用 dash</p>
+<p>#!/bin/sh<br>改为</p>
+<p>#!/bin/bash<br>或者直接修改 ubuntu 默认shell<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ ll /bin/sh</span><br><span class="line">lrwxrwxrwx <span class="number">1</span> root root <span class="number">4</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> /bin/sh -&gt; dash*</span><br><span class="line">wxianfeng@ubuntu:~$ sudo dpkg-reconfigure dash <span class="comment"># 选择 NO</span></span><br><span class="line">wxianfeng@ubuntu:~$ ll /bin/sh</span><br><span class="line">lrwxrwxrwx <span class="number">1</span> root root <span class="number">4</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">10</span>:<span class="number">37</span> /bin/sh -&gt; bash*</span><br></pre></td></tr></table></figure></p>
+<p>3,服务 无法 开启 daemon（守护进程） 的 用 nohup 启动 ,例如 mongodb</p>
+<p>4,确保 文件的执行权限 登录的普通用户可以使用 ， 默认 ubuntu 登录 是非 root 账户</p>
+<p>修改前:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ ll /etc/rc.local</span><br><span class="line">-rwxr-xr-x <span class="number">1</span> root root <span class="number">736</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">09</span>:<span class="number">35</span> /etc/rc.local*</span><br></pre></td></tr></table></figure>
+<p>修改:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ sudo chgrp -R wxianfeng /etc/rc.local</span><br><span class="line">wxianfeng@ubuntu:~$ sudo chown -R wxianfeng /etc/rc.local</span><br></pre></td></tr></table></figure>
+<p>修改后:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ ll /etc/rc.local</span><br><span class="line">-rwxr-xr-x <span class="number">1</span> wxianfeng wxianfeng <span class="number">736</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">09</span>:<span class="number">35</span> /etc/rc.local*</span><br></pre></td></tr></table></figure>
+<p>5,把 rc.local 中的 第一行 -e 给去掉</p>
+<p>-e 参数 是 脚本遇到 错误 就退出 , 这个 很不好 , 可以 man sh 看下 -e 参数:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;man sh</span><br><span class="line"><span class="operator">-e</span> errexit       If not interactive, <span class="built_in">exit</span> immediately <span class="keyword">if</span> any untested <span class="built_in">command</span> fails.  The <span class="built_in">exit</span> status of a <span class="built_in">command</span> is considered to be explicitly tested <span class="keyword">if</span> the</span><br><span class="line">                            <span class="built_in">command</span> is used to control an <span class="keyword">if</span>, <span class="keyword">elif</span>, <span class="keyword">while</span>, or until; or <span class="keyword">if</span> the <span class="built_in">command</span> is the left hand operand of an “&amp;&amp;” or “||” operator.</span><br></pre></td></tr></table></figure>
+<p>6,DEMO:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ cat /etc/rc.local </span><br><span class="line"><span class="shebang">#!/bin/bash </span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># rc.local</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># This script is executed at the end of each multiuser runlevel.</span></span><br><span class="line"><span class="comment"># Make sure that the script will "exit 0" on success or any other</span></span><br><span class="line"><span class="comment"># value on error.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># In order to enable or disable this script just change the execution</span></span><br><span class="line"><span class="comment"># bits.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># By default this script does nothing.</span></span><br><span class="line"></span><br><span class="line">/etc/init.d/mysql start <span class="comment"># 启动 mysql</span></span><br><span class="line"><span class="built_in">exit</span> <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>说了 那么多 ， 说下 rc.local 的 启动原理:</p>
+<p>ubuntu 的开机的时候 会根据当前的 运行级别 即 runlevel</p>
+<p>wxianfeng@ubuntu:~$ runlevel<br>N 2<br>可以看出是2 ,然后 通过 runlevel 执行 /etc/rc*.d 下的 所有文件 ,这里即 rc2.d</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ ll /etc/rc2.d/</span><br><span class="line">total <span class="number">20</span></span><br><span class="line">drwxr-xr-x   <span class="number">2</span> root root  <span class="number">4096</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">06</span> <span class="number">10</span>:<span class="number">30</span> ./</span><br><span class="line">drwxr-xr-x <span class="number">141</span> root root <span class="number">12288</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">11</span>:<span class="number">04</span> ../</span><br><span class="line">-rw-r--r--   <span class="number">1</span> root root   <span class="number">677</span> <span class="number">2010</span>-<span class="number">09</span>-<span class="number">25</span> <span class="number">02</span>:<span class="number">16</span> README</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">20</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S20fancontrol -&gt; ../init.d/fancontrol*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">20</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S20kerneloops -&gt; ../init.d/kerneloops*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">27</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S20speech-dispatcher -&gt; ../init.d/speech-dispatcher*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">24</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">06</span> <span class="number">10</span>:<span class="number">30</span> S20virtualbox-ose -&gt; ../init.d/virtualbox-ose*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">19</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S25bluetooth -&gt; ../init.d/bluetooth*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">20</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S50pulseaudio -&gt; ../init.d/pulseaudio*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">15</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S50rsync -&gt; ../init.d/rsync*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">15</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S50saned -&gt; ../init.d/saned*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">19</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S70dns-clean -&gt; ../init.d/dns-clean*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">18</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S70pppd-dns -&gt; ../init.d/pppd-dns*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">14</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S75sudo -&gt; ../init.d/sudo*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">24</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S90binfmt-support -&gt; ../init.d/binfmt-support*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">17</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">15</span> <span class="number">13</span>:<span class="number">45</span> S91apache2 -&gt; ../init.d/apache2*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">22</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S99acpi-support -&gt; ../init.d/acpi-support*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">21</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S99grub-common -&gt; ../init.d/grub-common*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">18</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S99ondemand -&gt; ../init.d/ondemand*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">18</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S99rc.local -&gt; ../init.d/rc.local*</span><br></pre></td></tr></table></figure>
+<p>可以 看到 S99rc.local 软链接 从 /etc/init.d/rc.local 过来的 ,打开 看看 ,这里有 调用 /etc/rc.local 的文件 ，/etc/rc.local 也就是 从这里启动的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ cat /etc/init.d/rc.local </span><br><span class="line"><span class="shebang">#! /bin/sh</span></span><br><span class="line"><span class="comment">### BEGIN INIT INFO</span></span><br><span class="line"><span class="comment"># Provides:          rc.local</span></span><br><span class="line"><span class="comment"># Required-Start:    $remote_fs $syslog $all</span></span><br><span class="line"><span class="comment"># Required-Stop:</span></span><br><span class="line"><span class="comment"># Default-Start:     2 3 4 5</span></span><br><span class="line"><span class="comment"># Default-Stop:</span></span><br><span class="line"><span class="comment"># Short-Description: Run /etc/rc.local if it exist</span></span><br><span class="line"><span class="comment">### END INIT INFO</span></span><br><span class="line"></span><br><span class="line">PATH=/sbin:/usr/sbin:/bin:/usr/bin</span><br><span class="line"></span><br><span class="line">. /lib/init/vars.sh</span><br><span class="line">. /lib/lsb/init-functions</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">do_start</span></span>() &#123;</span><br><span class="line">        <span class="keyword">if</span> [ -x /etc/rc.local ]; <span class="keyword">then</span></span><br><span class="line">                [ <span class="string">"<span class="variable">$VERBOSE</span>"</span> != no ] &amp;&amp; <span class="built_in">log</span>_begin_msg <span class="string">"Running local boot scripts (/etc/rc.local)"</span></span><br><span class="line">                /etc/rc.local</span><br><span class="line">                ES=$?</span><br><span class="line">                [ <span class="string">"<span class="variable">$VERBOSE</span>"</span> != no ] &amp;&amp; <span class="built_in">log</span>_end_msg <span class="variable">$ES</span></span><br><span class="line">                <span class="built_in">return</span> <span class="variable">$ES</span></span><br><span class="line">        <span class="keyword">fi</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">case</span> <span class="string">"<span class="variable">$1</span>"</span> <span class="keyword">in</span></span><br><span class="line">    start)</span><br><span class="line">        <span class="keyword">do</span>_start</span><br><span class="line">        ;;</span><br><span class="line">    restart|reload|force-reload)</span><br><span class="line">        <span class="built_in">echo</span> <span class="string">"Error: argument '<span class="variable">$1</span>' not supported"</span> &gt;&amp;<span class="number">2</span></span><br><span class="line">        <span class="built_in">exit</span> <span class="number">3</span></span><br><span class="line">        ;;</span><br><span class="line">    stop)</span><br><span class="line">        ;;</span><br><span class="line">    *)</span><br><span class="line">        <span class="built_in">echo</span> <span class="string">"Usage: <span class="variable">$0</span> start|stop"</span> &gt;&amp;<span class="number">2</span></span><br><span class="line">        <span class="built_in">exit</span> <span class="number">3</span></span><br><span class="line">        ;;</span><br><span class="line"><span class="keyword">esac</span></span><br></pre></td></tr></table></figure>
+<p>使用 update-rc.d</p>
+<p>apache 开机自启动</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;sudo update-rc.d apache2 defaults</span><br><span class="line">mysql 开机自启动</span><br><span class="line"></span><br><span class="line">&gt;sudo update-rc.d mysql defaults</span><br><span class="line">开机 启动 GUI 软件</span><br></pre></td></tr></table></figure>
+<p>上面 是 开机 启动一些服务 ,例如 mysql ,apache 啥的 ，但是 开机启动一些软件 怎么办,例如 netbeans , eclipse 等</p>
+<p>ubuntu 已经 给了我们 gui的配置工具</p>
+<p>system -&gt; prefences -&gt; start applications</p>
+<p>把所有启动的 GUI 软件 放到一个 shell 里，然后 添加 启动这个shell 即可:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ cat /usr/<span class="built_in">local</span>/system/shell/autostart.sh </span><br><span class="line"><span class="shebang">#!/bin/sh </span><br><span class="line"></span></span><br><span class="line">nohup /usr/<span class="built_in">local</span>/system/netbeans6_9/bin/netbeans --locale zh_CN.UTF-<span class="number">8</span>  &amp; <span class="comment"># 启动netbeans </span></span><br><span class="line">nohup firefox &amp; <span class="comment"># 启动 firefox 可以 默认开启一个网页 firefox wxianfeng.com</span></span><br><span class="line">nohup /opt/google/chrome/google-chrome &amp; <span class="comment"># 启动 chrome</span></span><br><span class="line">nohup guake &amp; <span class="comment"># 启动guake</span></span><br><span class="line">nohup emesene &amp; <span class="comment"># 启动 emesene （ubuntu MSN客户端）</span></span><br><span class="line">nohup empathy &amp; <span class="comment"># 启动 empathy (登录gtalk之用)</span></span><br></pre></td></tr></table></figure>
+<p>添加 过后 其实 是在 ~/.config/autostart 目录下 建立了一个新的.desktop启动文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/.config/autostart/</span><br><span class="line">wxianfeng@ubuntu:~/.config/autostart$ ll</span><br><span class="line">total <span class="number">12</span></span><br><span class="line">drwx------  <span class="number">2</span> wxianfeng wxianfeng <span class="number">4096</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">11</span>:<span class="number">03</span> ./</span><br><span class="line">drwxr-xr-x <span class="number">18</span> wxianfeng wxianfeng <span class="number">4096</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">11</span>:<span class="number">03</span> ../</span><br><span class="line">-rw-r--r--  <span class="number">1</span> wxianfeng wxianfeng  <span class="number">266</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">11</span>:<span class="number">03</span> autostart.sh.desktop</span><br><span class="line">wxianfeng@ubuntu:~/.config/autostart$ cat autostart.sh.desktop </span><br><span class="line"></span><br><span class="line">[Desktop Entry]</span><br><span class="line">Type=Application</span><br><span class="line">Exec=/usr/<span class="built_in">local</span>/system/shell/autostart.sh</span><br><span class="line">Hidden=<span class="literal">false</span></span><br><span class="line">NoDisplay=<span class="literal">false</span></span><br><span class="line">X-GNOME-Autostart-enabled=<span class="literal">true</span></span><br><span class="line">Name[en_US]=autostart_shell</span><br><span class="line">Name=autostart_shell</span><br><span class="line">Comment[en_US]=start GUI software when boot</span><br><span class="line">Comment=start GUI software when boot</span><br></pre></td></tr></table></figure>
+<p>也就是说 这个文件 你可以 手动建立 , 从里面可以看出 我开机启动的 shell 脚本 路径在 /usr/local/system/shell/autostart.sh</p>
+<p>注意点:</p>
+<p>刚开始 我想把我的 gui 软件 启动也放到rc.local 中 ,这个 是不允许的 ,rc.local 只能启动服务,不能启动 图形界面的 程序</p>
+<p>see:</p>
+<p><a href="http://www.bettershop.com.cn/bbs/read.php?tid-1029.htmlhttp://blog.163.com/lgh_2002/blog/static/44017526201032803748503http://www.ihacklog.com/linux/tips-linux/fcitx-autostart-via-rc-local.htm" target="_blank" rel="external">http://www.bettershop.com.cn/bbs/read.php?tid-1029.htmlhttp://blog.163.com/lgh_2002/blog/static/44017526201032803748503http://www.ihacklog.com/linux/tips-linux/fcitx-autostart-via-rc-local.htm</a></p>
 
       
     </div>
@@ -841,7 +787,7 @@
       
       
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
+	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/Linux/">Linux</a>
 	</div>
 
 
@@ -860,11 +806,11 @@
 
 
   
-    <article id="post-2013-10-text-similarity-algorithm-php" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2014-05-codeigniter-email-ssl" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2013/10/03/2013-10-text-similarity-algorithm-php/" class="article-date">
-  	<time datetime="2013-10-02T17:09:00.000Z" itemprop="datePublished">2013-10-03</time>
+      <a href="/2014/05/24/2014-05-codeigniter-email-ssl/" class="article-date">
+  	<time datetime="2014-05-24T15:47:00.000Z" itemprop="datePublished">2014-05-24</time>
 </a>
     </div>
   
@@ -877,7 +823,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2013/10/03/2013-10-text-similarity-algorithm-php/">用余弦定理实现文本相似度算法</a>
+      <a class="article-title" href="/2014/05/24/2014-05-codeigniter-email-ssl/">使用fastcgi_finish_request提高页面响应速度</a>
     </h1>
   
 
@@ -886,7 +832,8 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>续上一篇文章的算法，这次自己改成PHP版本，当然如果有优化的地方请指出，以便大家学习。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line">header(<span class="string">'Content-Type: text/html; charset=UTF-8'</span>);</span><br><span class="line"><span class="variable">$text1</span> = <span class="string">&lt;&lt;&lt;EOF</span><br><span class="line">Fragment A (By Rousseau)：</span><br><span class="line">À l’instant, au lieu de la personne particulière de chaque contractant, cet acte d’association produit un Corps moral et collectif, composé d’autant de membres que l’assemblée a de voix, lequel reçoit de ce même acte son unité, son moi commun, sa vie et sa volonté. Cette personne publique, qui se forme ainsi par l’union de toutes les autres, prenait autrefois le nom de Cité , et prend maintenant celui de République ou de Corps politique: lequel est appelé par ses membres État quand il est passif, Souverain quand il est actif, Puissance en le comparant à ses semblables. À l’égard des associés, ils prennent collectivement le nom de peuple, et s’appellent en particulier citoyens, comme participant à l’autorité souveraine, et sujets, comme soumis aux lois de l’État. (Rousseau, Du contrat social, I.6)</span><br><span class="line">EOF;</span></span><br><span class="line"><span class="variable">$text2</span> = <span class="string">&lt;&lt;&lt;EOF</span><br><span class="line">Fragment B (By Hobbes)：</span><br><span class="line">Art goes yet further, imitating that Rationall and most excellent worke of Nature, Man. For by Art is created that great LEVIATHAN called a COMMON-WEALTH, or STATE, (in latine CIVITAS) which is but an Artificiall Man; though of greater stature and strength than the Naturall, for whoseprotection and defence it was intended; and in which, the Soveraignty is an Artificiall Soul, as giving life and motion to the whole body; The Magistrates, and other Officers of Judicature and Execution, artificiall Joynts; Reward and Punishment (by which fastned to the seat of the Soveraignty, every joynt and member is moved to performe his duty) are the Nerves, that do the same in the Body Naturall; The Wealth and Riches of all the particular members, are the Strength; Salus Populi (the Peoples Safety) its Businesse; Counsellors, by whom all things needfull for it to know, are suggested unto it, are the Memory; Equity and Lawes, an artificiall Reason and Will; Concord, Health; Sedition, Sicknesse; and Civill War, Death. Lastly, the Pacts and Covenants, by which the parts of this Body Politique were at first made, set together, and united, resemble that Fiat, or the Let Us Make Man, pronounced by God in the Creation. (Hobbes, Leviathan, "Introduction"）</span><br><span class="line">EOF;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> similarAlgorithm(<span class="variable">$text1</span> , <span class="variable">$text2</span>);</span><br><span class="line"><span class="comment">/*</span><br><span class="line">* 文本相似度匹配</span><br><span class="line">* <span class="doctag">@author</span> juice</span><br><span class="line">* <span class="doctag">@param</span> text1 匹配文本1</span><br><span class="line">* <span class="doctag">@param</span> text2 匹配文本2</span><br><span class="line">* <span class="doctag">@return</span> double 返回相似度(余弦值)</span><br><span class="line">*/</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">similarAlgorithm</span><span class="params">(<span class="variable">$text1</span> = <span class="string">''</span> , <span class="variable">$text2</span> = <span class="string">''</span>)</span></span>&#123;</span><br><span class="line">    <span class="variable">$charset</span> = <span class="string">'UTF-8'</span> ;</span><br><span class="line">    <span class="variable">$text1Array</span> = mbStringToArray(<span class="variable">$text1</span> , <span class="variable">$charset</span> ,<span class="keyword">TRUE</span>);</span><br><span class="line">    <span class="variable">$text2Array</span> = mbStringToArray(<span class="variable">$text2</span> , <span class="variable">$charset</span> ,<span class="keyword">TRUE</span>);</span><br><span class="line">    <span class="variable">$textSumArray</span> = <span class="keyword">array</span>();</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$text1Array</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)&#123;<span class="comment">//统计该字在第一文本中出现的次数</span></span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$textSumArray</span>[<span class="variable">$val</span>]))&#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">0</span>]++;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$text2Array</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)&#123;<span class="comment">//统计该字在第二文本中出现的次数</span></span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$textSumArray</span>[<span class="variable">$val</span>]))&#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">1</span>]++;</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="variable">$sqdoc1</span> = <span class="number">0</span>;<span class="comment">//平方和</span></span><br><span class="line">    <span class="variable">$sqdoc2</span> = <span class="number">0</span>;<span class="comment">//平方和</span></span><br><span class="line">    <span class="variable">$denominator</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$textSumArray</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)&#123;</span><br><span class="line">        <span class="variable">$denominator</span> += <span class="variable">$val</span>[<span class="number">0</span>] * <span class="variable">$val</span>[<span class="number">1</span>];</span><br><span class="line">        <span class="variable">$sqdoc1</span> += <span class="variable">$val</span>[<span class="number">0</span>] * <span class="variable">$val</span>[<span class="number">0</span>];</span><br><span class="line">        <span class="variable">$sqdoc2</span> += <span class="variable">$val</span>[<span class="number">1</span>] * <span class="variable">$val</span>[<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$denominator</span> / sqrt(<span class="variable">$sqdoc1</span>*<span class="variable">$sqdoc2</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span><br><span class="line">* 分割字符串方法 （支持中文分割）</span><br><span class="line">* <span class="doctag">@author</span> juice</span><br><span class="line">* <span class="doctag">@param</span> str 需要分割的字符串</span><br><span class="line">* <span class="doctag">@param</span> charset 字符串的编码，默认UTF-8</span><br><span class="line">* <span class="doctag">@param</span> convertedToHex 是否返回该字符的16进制，TRUE返回每个字符16进制，FALSE则返回原本字符</span><br><span class="line">* <span class="doctag">@return</span> double 返回相似度(余弦值)</span><br><span class="line">*/</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mbStringToArray</span><span class="params">(<span class="variable">$str</span> = <span class="string">''</span>,<span class="variable">$charset</span> = <span class="string">'UTF-8'</span> , <span class="variable">$convertedToHex</span> = FALSE)</span> </span>&#123;</span><br><span class="line">    <span class="variable">$strlen</span> = mb_strlen(<span class="variable">$str</span>);</span><br><span class="line">    <span class="keyword">if</span>( <span class="variable">$convertedToHex</span> === <span class="keyword">TRUE</span> )&#123;</span><br><span class="line">        <span class="keyword">while</span>(<span class="variable">$strlen</span>)&#123;</span><br><span class="line">            <span class="variable">$array</span>[] = bin2hex(mb_substr(<span class="variable">$str</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="variable">$charset</span>));</span><br><span class="line">            <span class="variable">$str</span> = mb_substr(<span class="variable">$str</span>,<span class="number">1</span>,<span class="variable">$strlen</span>,<span class="variable">$charset</span>);</span><br><span class="line">            <span class="variable">$strlen</span> = mb_strlen(<span class="variable">$str</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">while</span>(<span class="variable">$strlen</span>)&#123;</span><br><span class="line">            <span class="variable">$array</span>[] = mb_substr(<span class="variable">$str</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="variable">$charset</span>);</span><br><span class="line">            <span class="variable">$str</span> = mb_substr(<span class="variable">$str</span>,<span class="number">1</span>,<span class="variable">$strlen</span>,<span class="variable">$charset</span>);</span><br><span class="line">            <span class="variable">$strlen</span> = mb_strlen(<span class="variable">$str</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$array</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+        <p>CI的email类是支持SSL加密的，只要设置 $config[‘smtp_crypto’] = ‘ssl’; 就行了，官方文档上面没有写这个，太坑了。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$config</span>[<span class="string">'protocol'</span>] = <span class="string">'smtp'</span>;<span class="comment">// mail, sendmail, or smtp</span></span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_host'</span>] = <span class="string">'smtp.163.com'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_user'</span>] = <span class="string">'XXX@163.com'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_pass'</span>] = <span class="string">'XXX'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_port'</span>] = <span class="string">'465'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_crypto'</span>] = <span class="string">'ssl'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'charset'</span>] = <span class="string">'UTF-8'</span>;<span class="comment">// 默认UTF-8</span></span><br><span class="line"><span class="variable">$config</span>[<span class="string">'wordwrap'</span>] = <span class="keyword">true</span>;<span class="comment">//自动换行</span></span><br></pre></td></tr></table></figure></p>
+<p>done!</p>
 
       
     </div>
@@ -896,65 +843,7 @@
       
       
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
-	</div>
-
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
-    <article id="post-2013-09-curl-400-bad-request" class="article article-type-post" itemscope itemprop="blogPost">
-  
-    <div class="article-meta">
-      <a href="/2013/09/09/2013-09-curl-400-bad-request/" class="article-date">
-  	<time datetime="2013-09-09T09:30:00.000Z" itemprop="datePublished">2013-09-09</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/09/09/2013-09-curl-400-bad-request/">php curl请求返回400 Bad Request的解决方法</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&amp;nbsp;</span><br><span class="line"><span class="tag">&lt;<span class="title">h1</span>&gt;</span>400 Bad Request<span class="tag">&lt;/<span class="title">h1</span>&gt;</span></span><br><span class="line">&amp;nbsp;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="title">center</span>&gt;</span>nginx/1.2.0<span class="tag">&lt;/<span class="title">center</span>&gt;</span></span><br></pre></td></tr></table></figure>
-<p>当你使用php的curl方法时会返回400 Bad Request，这有如下几种原因：</p>
-<p>1.远端有检测客户端过滤行为。<br>2.远端有redir行为。<br>3.请求中间层。<br>4.近端有过滤行为。<br>5.某个过程有缓存机制。<br>6.脚本文件编码问题。</p>
-<p>前面5种都是服务器的限制，做一些伪装就可以，但是很多人会忽略掉第六个原因，这是因为Unicode、Unicode big endian和UTF-8编码的txt文件的开头会多出几个字节，分别是FF、FE（Unicode）,FE、FF（Unicode big endian）,EF、BB、BF（UTF-8）。一般只要换成UTF-8编码就没有可以解决了。</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/PHP/">PHP</a>
 	</div>
 
 
@@ -975,7 +864,7 @@
   
   
     <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
     </nav>
   
 </div>

@@ -196,6 +196,170 @@
 </nav>
       <div class="body-wrap">
   
+    <article id="post-2014-05-ubuntu-startup-power" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2014/05/24/2014-05-ubuntu-startup-power/" class="article-date">
+  	<time datetime="2014-05-24T15:47:00.000Z" itemprop="datePublished">2014-05-24</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/24/2014-05-ubuntu-startup-power/">ubuntu 开机自启动服务 和 GUI 软件</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>每天上班的第一件事就是开电脑 ， 开一些工作上必须用的软件 或者一些服务 ， 每天 都要动你的鼠标 去打开 应用程序 或者 在terminal 上敲命令启动 服务，这样 未免 太麻烦了 ，一点也不 DRY ， 那就 把你每天必备的 服务 ， 都放在 rc.local中 或者使用 update-rc.d ， GUI 软件放到 startup applications 中 随着 开机一起启动吧</p>
+<p>开机 自启动服务</p>
+<p>使用 rc.local</p>
+<p>1,把你需要 启动的 程序都放到 /etc/rc.local 中，注意写到 exit 0 前面</p>
+<p>2,默认 ubuntu 的 shell 是 dash ,据说 是为了 提高 开机速度</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ ls <span class="operator">-l</span> /bin/sh</span><br><span class="line">lrwxrwxrwx <span class="number">1</span> root root <span class="number">4</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> /bin/sh -&gt; dash</span><br></pre></td></tr></table></figure>
+<p>但是 dash 是一个 对脚本 兼容性 和 容错性 非常差的 shell,修改 rc.local 用 bash 来执行不要使用 dash</p>
+<p>#!/bin/sh<br>改为</p>
+<p>#!/bin/bash<br>或者直接修改 ubuntu 默认shell<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ ll /bin/sh</span><br><span class="line">lrwxrwxrwx <span class="number">1</span> root root <span class="number">4</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> /bin/sh -&gt; dash*</span><br><span class="line">wxianfeng@ubuntu:~$ sudo dpkg-reconfigure dash <span class="comment"># 选择 NO</span></span><br><span class="line">wxianfeng@ubuntu:~$ ll /bin/sh</span><br><span class="line">lrwxrwxrwx <span class="number">1</span> root root <span class="number">4</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">10</span>:<span class="number">37</span> /bin/sh -&gt; bash*</span><br></pre></td></tr></table></figure></p>
+<p>3,服务 无法 开启 daemon（守护进程） 的 用 nohup 启动 ,例如 mongodb</p>
+<p>4,确保 文件的执行权限 登录的普通用户可以使用 ， 默认 ubuntu 登录 是非 root 账户</p>
+<p>修改前:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ ll /etc/rc.local</span><br><span class="line">-rwxr-xr-x <span class="number">1</span> root root <span class="number">736</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">09</span>:<span class="number">35</span> /etc/rc.local*</span><br></pre></td></tr></table></figure>
+<p>修改:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ sudo chgrp -R wxianfeng /etc/rc.local</span><br><span class="line">wxianfeng@ubuntu:~$ sudo chown -R wxianfeng /etc/rc.local</span><br></pre></td></tr></table></figure>
+<p>修改后:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ ll /etc/rc.local</span><br><span class="line">-rwxr-xr-x <span class="number">1</span> wxianfeng wxianfeng <span class="number">736</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">09</span>:<span class="number">35</span> /etc/rc.local*</span><br></pre></td></tr></table></figure>
+<p>5,把 rc.local 中的 第一行 -e 给去掉</p>
+<p>-e 参数 是 脚本遇到 错误 就退出 , 这个 很不好 , 可以 man sh 看下 -e 参数:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;man sh</span><br><span class="line"><span class="operator">-e</span> errexit       If not interactive, <span class="built_in">exit</span> immediately <span class="keyword">if</span> any untested <span class="built_in">command</span> fails.  The <span class="built_in">exit</span> status of a <span class="built_in">command</span> is considered to be explicitly tested <span class="keyword">if</span> the</span><br><span class="line">                            <span class="built_in">command</span> is used to control an <span class="keyword">if</span>, <span class="keyword">elif</span>, <span class="keyword">while</span>, or until; or <span class="keyword">if</span> the <span class="built_in">command</span> is the left hand operand of an “&amp;&amp;” or “||” operator.</span><br></pre></td></tr></table></figure>
+<p>6,DEMO:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ cat /etc/rc.local </span><br><span class="line"><span class="shebang">#!/bin/bash </span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># rc.local</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># This script is executed at the end of each multiuser runlevel.</span></span><br><span class="line"><span class="comment"># Make sure that the script will "exit 0" on success or any other</span></span><br><span class="line"><span class="comment"># value on error.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># In order to enable or disable this script just change the execution</span></span><br><span class="line"><span class="comment"># bits.</span></span><br><span class="line"><span class="comment">#</span></span><br><span class="line"><span class="comment"># By default this script does nothing.</span></span><br><span class="line"></span><br><span class="line">/etc/init.d/mysql start <span class="comment"># 启动 mysql</span></span><br><span class="line"><span class="built_in">exit</span> <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>说了 那么多 ， 说下 rc.local 的 启动原理:</p>
+<p>ubuntu 的开机的时候 会根据当前的 运行级别 即 runlevel</p>
+<p>wxianfeng@ubuntu:~$ runlevel<br>N 2<br>可以看出是2 ,然后 通过 runlevel 执行 /etc/rc*.d 下的 所有文件 ,这里即 rc2.d</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ ll /etc/rc2.d/</span><br><span class="line">total <span class="number">20</span></span><br><span class="line">drwxr-xr-x   <span class="number">2</span> root root  <span class="number">4096</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">06</span> <span class="number">10</span>:<span class="number">30</span> ./</span><br><span class="line">drwxr-xr-x <span class="number">141</span> root root <span class="number">12288</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">11</span>:<span class="number">04</span> ../</span><br><span class="line">-rw-r--r--   <span class="number">1</span> root root   <span class="number">677</span> <span class="number">2010</span>-<span class="number">09</span>-<span class="number">25</span> <span class="number">02</span>:<span class="number">16</span> README</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">20</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S20fancontrol -&gt; ../init.d/fancontrol*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">20</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S20kerneloops -&gt; ../init.d/kerneloops*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">27</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S20speech-dispatcher -&gt; ../init.d/speech-dispatcher*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">24</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">06</span> <span class="number">10</span>:<span class="number">30</span> S20virtualbox-ose -&gt; ../init.d/virtualbox-ose*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">19</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S25bluetooth -&gt; ../init.d/bluetooth*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">20</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S50pulseaudio -&gt; ../init.d/pulseaudio*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">15</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S50rsync -&gt; ../init.d/rsync*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">15</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S50saned -&gt; ../init.d/saned*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">19</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S70dns-clean -&gt; ../init.d/dns-clean*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">18</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S70pppd-dns -&gt; ../init.d/pppd-dns*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">14</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S75sudo -&gt; ../init.d/sudo*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">24</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S90binfmt-support -&gt; ../init.d/binfmt-support*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">17</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">15</span> <span class="number">13</span>:<span class="number">45</span> S91apache2 -&gt; ../init.d/apache2*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">22</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S99acpi-support -&gt; ../init.d/acpi-support*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">21</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S99grub-common -&gt; ../init.d/grub-common*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">18</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S99ondemand -&gt; ../init.d/ondemand*</span><br><span class="line">lrwxrwxrwx   <span class="number">1</span> root root    <span class="number">18</span> <span class="number">2010</span>-<span class="number">11</span>-<span class="number">12</span> <span class="number">19</span>:<span class="number">12</span> S99rc.local -&gt; ../init.d/rc.local*</span><br></pre></td></tr></table></figure>
+<p>可以 看到 S99rc.local 软链接 从 /etc/init.d/rc.local 过来的 ,打开 看看 ,这里有 调用 /etc/rc.local 的文件 ，/etc/rc.local 也就是 从这里启动的:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ cat /etc/init.d/rc.local </span><br><span class="line"><span class="shebang">#! /bin/sh</span></span><br><span class="line"><span class="comment">### BEGIN INIT INFO</span></span><br><span class="line"><span class="comment"># Provides:          rc.local</span></span><br><span class="line"><span class="comment"># Required-Start:    $remote_fs $syslog $all</span></span><br><span class="line"><span class="comment"># Required-Stop:</span></span><br><span class="line"><span class="comment"># Default-Start:     2 3 4 5</span></span><br><span class="line"><span class="comment"># Default-Stop:</span></span><br><span class="line"><span class="comment"># Short-Description: Run /etc/rc.local if it exist</span></span><br><span class="line"><span class="comment">### END INIT INFO</span></span><br><span class="line"></span><br><span class="line">PATH=/sbin:/usr/sbin:/bin:/usr/bin</span><br><span class="line"></span><br><span class="line">. /lib/init/vars.sh</span><br><span class="line">. /lib/lsb/init-functions</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="title">do_start</span></span>() &#123;</span><br><span class="line">        <span class="keyword">if</span> [ -x /etc/rc.local ]; <span class="keyword">then</span></span><br><span class="line">                [ <span class="string">"<span class="variable">$VERBOSE</span>"</span> != no ] &amp;&amp; <span class="built_in">log</span>_begin_msg <span class="string">"Running local boot scripts (/etc/rc.local)"</span></span><br><span class="line">                /etc/rc.local</span><br><span class="line">                ES=$?</span><br><span class="line">                [ <span class="string">"<span class="variable">$VERBOSE</span>"</span> != no ] &amp;&amp; <span class="built_in">log</span>_end_msg <span class="variable">$ES</span></span><br><span class="line">                <span class="built_in">return</span> <span class="variable">$ES</span></span><br><span class="line">        <span class="keyword">fi</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">case</span> <span class="string">"<span class="variable">$1</span>"</span> <span class="keyword">in</span></span><br><span class="line">    start)</span><br><span class="line">        <span class="keyword">do</span>_start</span><br><span class="line">        ;;</span><br><span class="line">    restart|reload|force-reload)</span><br><span class="line">        <span class="built_in">echo</span> <span class="string">"Error: argument '<span class="variable">$1</span>' not supported"</span> &gt;&amp;<span class="number">2</span></span><br><span class="line">        <span class="built_in">exit</span> <span class="number">3</span></span><br><span class="line">        ;;</span><br><span class="line">    stop)</span><br><span class="line">        ;;</span><br><span class="line">    *)</span><br><span class="line">        <span class="built_in">echo</span> <span class="string">"Usage: <span class="variable">$0</span> start|stop"</span> &gt;&amp;<span class="number">2</span></span><br><span class="line">        <span class="built_in">exit</span> <span class="number">3</span></span><br><span class="line">        ;;</span><br><span class="line"><span class="keyword">esac</span></span><br></pre></td></tr></table></figure>
+<p>使用 update-rc.d</p>
+<p>apache 开机自启动</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&gt;sudo update-rc.d apache2 defaults</span><br><span class="line">mysql 开机自启动</span><br><span class="line"></span><br><span class="line">&gt;sudo update-rc.d mysql defaults</span><br><span class="line">开机 启动 GUI 软件</span><br></pre></td></tr></table></figure>
+<p>上面 是 开机 启动一些服务 ,例如 mysql ,apache 啥的 ，但是 开机启动一些软件 怎么办,例如 netbeans , eclipse 等</p>
+<p>ubuntu 已经 给了我们 gui的配置工具</p>
+<p>system -&gt; prefences -&gt; start applications</p>
+<p>把所有启动的 GUI 软件 放到一个 shell 里，然后 添加 启动这个shell 即可:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">wxianfeng@ubuntu:~$ cat /usr/<span class="built_in">local</span>/system/shell/autostart.sh </span><br><span class="line"><span class="shebang">#!/bin/sh </span><br><span class="line"></span></span><br><span class="line">nohup /usr/<span class="built_in">local</span>/system/netbeans6_9/bin/netbeans --locale zh_CN.UTF-<span class="number">8</span>  &amp; <span class="comment"># 启动netbeans </span></span><br><span class="line">nohup firefox &amp; <span class="comment"># 启动 firefox 可以 默认开启一个网页 firefox wxianfeng.com</span></span><br><span class="line">nohup /opt/google/chrome/google-chrome &amp; <span class="comment"># 启动 chrome</span></span><br><span class="line">nohup guake &amp; <span class="comment"># 启动guake</span></span><br><span class="line">nohup emesene &amp; <span class="comment"># 启动 emesene （ubuntu MSN客户端）</span></span><br><span class="line">nohup empathy &amp; <span class="comment"># 启动 empathy (登录gtalk之用)</span></span><br></pre></td></tr></table></figure>
+<p>添加 过后 其实 是在 ~/.config/autostart 目录下 建立了一个新的.desktop启动文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> ~/.config/autostart/</span><br><span class="line">wxianfeng@ubuntu:~/.config/autostart$ ll</span><br><span class="line">total <span class="number">12</span></span><br><span class="line">drwx------  <span class="number">2</span> wxianfeng wxianfeng <span class="number">4096</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">11</span>:<span class="number">03</span> ./</span><br><span class="line">drwxr-xr-x <span class="number">18</span> wxianfeng wxianfeng <span class="number">4096</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">11</span>:<span class="number">03</span> ../</span><br><span class="line">-rw-r--r--  <span class="number">1</span> wxianfeng wxianfeng  <span class="number">266</span> <span class="number">2010</span>-<span class="number">12</span>-<span class="number">24</span> <span class="number">11</span>:<span class="number">03</span> autostart.sh.desktop</span><br><span class="line">wxianfeng@ubuntu:~/.config/autostart$ cat autostart.sh.desktop </span><br><span class="line"></span><br><span class="line">[Desktop Entry]</span><br><span class="line">Type=Application</span><br><span class="line">Exec=/usr/<span class="built_in">local</span>/system/shell/autostart.sh</span><br><span class="line">Hidden=<span class="literal">false</span></span><br><span class="line">NoDisplay=<span class="literal">false</span></span><br><span class="line">X-GNOME-Autostart-enabled=<span class="literal">true</span></span><br><span class="line">Name[en_US]=autostart_shell</span><br><span class="line">Name=autostart_shell</span><br><span class="line">Comment[en_US]=start GUI software when boot</span><br><span class="line">Comment=start GUI software when boot</span><br></pre></td></tr></table></figure>
+<p>也就是说 这个文件 你可以 手动建立 , 从里面可以看出 我开机启动的 shell 脚本 路径在 /usr/local/system/shell/autostart.sh</p>
+<p>注意点:</p>
+<p>刚开始 我想把我的 gui 软件 启动也放到rc.local 中 ,这个 是不允许的 ,rc.local 只能启动服务,不能启动 图形界面的 程序</p>
+<p>see:</p>
+<p><a href="http://www.bettershop.com.cn/bbs/read.php?tid-1029.htmlhttp://blog.163.com/lgh_2002/blog/static/44017526201032803748503http://www.ihacklog.com/linux/tips-linux/fcitx-autostart-via-rc-local.htm" target="_blank" rel="external">http://www.bettershop.com.cn/bbs/read.php?tid-1029.htmlhttp://blog.163.com/lgh_2002/blog/static/44017526201032803748503http://www.ihacklog.com/linux/tips-linux/fcitx-autostart-via-rc-local.htm</a></p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/Linux/">Linux</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2014-05-fastcgi-finish-request" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2014/05/20/2014-05-fastcgi-finish-request/" class="article-date">
+  	<time datetime="2014-05-20T10:05:00.000Z" itemprop="datePublished">2014-05-20</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/20/2014-05-fastcgi-finish-request/">使用fastcgi_finish_request提高页面响应速度</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>PHP运行在FastCGI模式时,PHP FPM提供了一个名为fastcgi_finish_request的方法.按照文档上的说法,此方法可以提高请求的处理速度,如果有些处理可以在页面生成完后再进行,就可以使用这个方法.</p>
+<p>听起来可能有些茫然,我们通过几个例子来说明一下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="keyword">echo</span> <span class="string">'例子：'</span>;</span><br><span class="line">fastcgi_finish_request(); <span class="comment">/* 响应完成, 关闭连接 */</span></span><br><span class="line"><span class="comment">/* 记录日志 */</span></span><br><span class="line">file_put_contents(<span class="string">'log.txt'</span>, <span class="string">'生存还是毁灭,这是个问题.'</span>);</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>通过浏览器访问此脚本, 结果发现并没有输出相应的字符串,但却生成了相应的文件.由此说明在调用fastcgi_finish_request后,客户端响应就已经结束,但与此同时服务端脚本却继续运行！</p>
+<p>合理利用这个特性可以大大提升用户体验,趁热打铁再来一个例子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="keyword">echo</span> <span class="string">'例子：'</span>;</span><br><span class="line">file_put_contents(<span class="string">'log.txt'</span>, date(<span class="string">'Y-m-d H:i:s'</span>) . <span class="string">" 上传视频\n"</span>, FILE_APPEND);</span><br><span class="line">fastcgi_finish_request();</span><br><span class="line">sleep(<span class="number">1</span>);</span><br><span class="line">file_put_contents(<span class="string">'log.txt'</span>, date(<span class="string">'Y-m-d H:i:s'</span>) . <span class="string">" 转换格式\n"</span>, FILE_APPEND);</span><br><span class="line">sleep(<span class="number">1</span>);</span><br><span class="line">file_put_contents(<span class="string">'log.txt'</span>, date(<span class="string">'Y-m-d H:i:s'</span>) . <span class="string">" 提取图片\n"</span>, FILE_APPEND);</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>代码里用sleep模拟一些耗时的操作,浏览时没有被堵塞,程序却都执行了,具体看日志.</p>
+<p>末了给您提个醒,Yahoo在Best Practices for Speeding Up Your Web Site中提到了Flush the Buffer Early,也就是利用PHP中的flush方法把内容尽快发到客户端去,它和本文介绍的fastcgi_finish_request有些许的类似.</p>
+<p>转载附言: 我看了下这个方法, 在调用的时候, 会发送响应, 关闭连接. 但是不会结束PHP的运行. 相比调用flush, 或者我之前介绍的加速你的Echo来说, 这个方法能更加干脆一些.</p>
+<p>另外, 从代码的可移植性讲的话, 可以在代码中附上如下代码:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!function_exists(<span class="string">"fastcgi_finish_request"</span>)) &#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">fastcgi_finish_request</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不会造成代码部署在非fpm环境下造成问题.</p>
+<p>文章转自: <a href="http://huoding.com/2011/04/12/63" target="_blank" rel="external">火丁笔记</a></p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/PHP/">PHP</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
     <article id="post-2014-05-php5.2-upgrade-php5.6" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">

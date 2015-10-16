@@ -3,33 +3,21 @@
 <head>
   <meta charset="utf-8">
   
-  <title>phpmyadmin页面提示mcrypt extension is missing错误解决 | juice 博客</title>
+  <title>linux下安装小米随身wifi的驱动，用来开启无线网卡功能 | juice 博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="这是一个mcrypt文件位置错误的bug
-详细的bug信息请参考以下网址：
-https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035
-#mv -i /etc/php5/conf.d/mcrypt.ini /etc/php5/mods-available/
-#sudo php5enmod mcrypt
-#/etc/init.d">
+  <meta name="description" content="随身wifi这东西说白了都是无线网卡，就是厂商改了pid让你系统不能自动识别加载驱动。导致只能用他的软件只能用来当AP。可恨的是从来不考虑linux下使用的情况，只能自己动手。其实找到芯片就可以了。安装芯片厂商的驱动。我手头有个小米wifi，其实买来好玩，基本从来不用。说实话弱爆了。插在usb口突出那么多，比之之前我买的tplink的无线网卡大多了。
+小米的芯片也是ralink的MT7601U，去">
 <meta property="og:type" content="article">
-<meta property="og:title" content="phpmyadmin页面提示mcrypt extension is missing错误解决">
-<meta property="og:url" content="http://juicechu.zhuxi.me/2013/11/22/2013-11-phpmyadmin-mcrypt-extension-is-missing/index.html">
+<meta property="og:title" content="linux下安装小米随身wifi的驱动，用来开启无线网卡功能">
+<meta property="og:url" content="http://juicechu.zhuxi.me/2014/05/24/2014-05-linux-xiaomi-wifi-driver/index.html">
 <meta property="og:site_name" content="juice 博客">
-<meta property="og:description" content="这是一个mcrypt文件位置错误的bug
-详细的bug信息请参考以下网址：
-https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035
-#mv -i /etc/php5/conf.d/mcrypt.ini /etc/php5/mods-available/
-#sudo php5enmod mcrypt
-#/etc/init.d">
-<meta property="og:updated_time" content="2015-10-16T01:59:29.000Z">
+<meta property="og:description" content="随身wifi这东西说白了都是无线网卡，就是厂商改了pid让你系统不能自动识别加载驱动。导致只能用他的软件只能用来当AP。可恨的是从来不考虑linux下使用的情况，只能自己动手。其实找到芯片就可以了。安装芯片厂商的驱动。我手头有个小米wifi，其实买来好玩，基本从来不用。说实话弱爆了。插在usb口突出那么多，比之之前我买的tplink的无线网卡大多了。
+小米的芯片也是ralink的MT7601U，去">
+<meta property="og:updated_time" content="2015-10-16T01:51:04.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="phpmyadmin页面提示mcrypt extension is missing错误解决">
-<meta name="twitter:description" content="这是一个mcrypt文件位置错误的bug
-详细的bug信息请参考以下网址：
-https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035
-#mv -i /etc/php5/conf.d/mcrypt.ini /etc/php5/mods-available/
-#sudo php5enmod mcrypt
-#/etc/init.d">
+<meta name="twitter:title" content="linux下安装小米随身wifi的驱动，用来开启无线网卡功能">
+<meta name="twitter:description" content="随身wifi这东西说白了都是无线网卡，就是厂商改了pid让你系统不能自动识别加载驱动。导致只能用他的软件只能用来当AP。可恨的是从来不考虑linux下使用的情况，只能自己动手。其实找到芯片就可以了。安装芯片厂商的驱动。我手头有个小米wifi，其实买来好玩，基本从来不用。说实话弱爆了。插在usb口突出那么多，比之之前我买的tplink的无线网卡大多了。
+小米的芯片也是ralink的MT7601U，去">
   
     <link rel="alternative" href="/atom.xml" title="juice 博客" type="application/atom+xml">
   
@@ -210,11 +198,11 @@ https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035
 		</header>				
 	</div>
 </nav>
-      <div class="body-wrap"><article id="post-2013-11-phpmyadmin-mcrypt-extension-is-missing" class="article article-type-post" itemscope itemprop="blogPost">
+      <div class="body-wrap"><article id="post-2014-05-linux-xiaomi-wifi-driver" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2013/11/22/2013-11-phpmyadmin-mcrypt-extension-is-missing/" class="article-date">
-  	<time datetime="2013-11-22T02:21:00.000Z" itemprop="datePublished">2013-11-22</time>
+      <a href="/2014/05/24/2014-05-linux-xiaomi-wifi-driver/" class="article-date">
+  	<time datetime="2014-05-24T15:50:00.000Z" itemprop="datePublished">2014-05-24</time>
 </a>
     </div>
   
@@ -227,7 +215,7 @@ https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035
         
   
     <h1 class="article-title" itemprop="name">
-      phpmyadmin页面提示mcrypt extension is missing错误解决
+      linux下安装小米随身wifi的驱动，用来开启无线网卡功能
     </h1>
   
 
@@ -237,7 +225,7 @@ https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035
         
         
 	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
+	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/Linux/">Linux</a>
 	</div>
 
 
@@ -247,13 +235,14 @@ https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>这是一个mcrypt文件位置错误的bug</p>
-<p>详细的bug信息请参考以下网址：</p>
-<p><a href="https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035" target="_blank" rel="external">https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035</a></p>
-<p>#mv -i /etc/php5/conf.d/mcrypt.ini /etc/php5/mods-available/</p>
-<p>#sudo php5enmod mcrypt</p>
-<p>#/etc/init.d/apache2 restart</p>
-<h2 id="ubuntu下phpmyadmin显示缺少_mcrypt_扩展。请检查_PHP_配置。">ubuntu下phpmyadmin显示缺少 mcrypt 扩展。请检查 PHP 配置。</h2><p>更新:2014-05-24<br>一般来说出现这个问题是由于没有安装mcrypt和配置导致的。<br>ubuntu下安装:sudo apt-get install php5-mcrypt libmcrypt-dev<br>安装之后如果仍然显示错误，则需要配置php扩展，一般来说配置文件都是在/etc/php5/下<br>你会在/etc/php5/mods-available/下看到配置文件mcrypt.ini，也可能在/etc/php5/conf.d/下，这时你只要将它链接到/etc/php5/fpm/conf.d/下就可以（cli和cgi类似就行）<br>命令：ln -s /etc/php5/mods-available/mcrypt.ini /etc/php5/fpm/conf.d/20-mcrypt.ini</p>
+        <p>随身wifi这东西说白了都是无线网卡，就是厂商改了pid让你系统不能自动识别加载驱动。导致只能用他的软件只能用来当AP。可恨的是从来不考虑linux下使用的情况，只能自己动手。<br>其实找到芯片就可以了。安装芯片厂商的驱动。<br>我手头有个小米wifi，其实买来好玩，基本从来不用。说实话弱爆了。插在usb口突出那么多，比之之前我买的tplink的无线网卡大多了。</p>
+<p>小米的芯片也是ralink的MT7601U，去官网下载最新linux驱动就可以了。<br>只是在修改common/rtusb_dev_id.c文件时，请添加小米wifi的pid<br>{USB_DEVICE(0x2717,0x4106)},<br>然后<br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">make</span><br><span class="line">make install</span><br><span class="line">modprobe mt7601Usta</span><br></pre></td></tr></table></figure></p>
+<p>就行了。</p>
+<p>再更新：<br>ubuntu升级为了14.04，但是发现怎么小米 wifi 驱动用不了，编译驱动发现报错，原来驱动不兼容，所以查了查资料参考<a href="http://blog.csdn.net/michaelbaker/article/details/23597741" target="_blank" rel="external">http://blog.csdn.net/michaelbaker/article/details/23597741</a><br>但是这位作者中间可能笔误写错了两行。<br>在前面修改PID之后，修改驱动代码里的/os/linux/rt_linux.c 的1211行和1222行的<br><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">            pOSFSInfo-&gt;fsuid = current_fsuid();</span><br><span class="line">                pOSFSInfo-&gt;fsgid = current_fsgid();</span><br></pre></td></tr></table></figure></p>
+<p>把他们两个改为</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pOSFSInfo-&gt;fsuid = *(<span class="keyword">int</span> *)&amp;current_fsuid();</span><br><span class="line"></span><br><span class="line">pOSFSInfo-&gt;fsgid = *(<span class="keyword">int</span> *)&amp;current_fsgid();</span><br></pre></td></tr></table></figure>
+<p>似乎是这两个变量在新的系统里返回值不是整型的缘故(?)</p>
+<p>然后按原来步骤在14.04下就能正常了。</p>
 
       
     </div>
@@ -263,18 +252,18 @@ https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035
     
 <nav id="article-nav">
   
-    <a href="/2013/11/22/2013-11-nginx-fpm-file-not-find/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2014/05/24/2014-05-linux-grub-repair/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption"><</strong>
       <div class="article-nav-title">
         
-          ubuntu下配置nginx+php-fpm的file not find问题
+          linux grub 修复注意
         
       </div>
     </a>
   
   
-    <a href="/2013/10/27/2013-10-multi-process-write/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">多进程写文件</div>
+    <a href="/2014/05/24/2014-05-ubuntu-startup-power/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">ubuntu 开机自启动服务 和 GUI 软件</div>
       <strong class="article-nav-caption">></strong>
     </a>
   
@@ -303,7 +292,7 @@ https://bugs.launchpad.net/ubuntu/+source/phpmyadmin/+bug/1236035
 
 <div class="duoshuo">
 	<!-- 多说评论框 start -->
-	<div class="ds-thread" data-thread-key="2013-11-phpmyadmin-mcrypt-extension-is-missing" data-title="phpmyadmin页面提示mcrypt extension is missing错误解决" data-url="http://juicechu.zhuxi.me/2013/11/22/2013-11-phpmyadmin-mcrypt-extension-is-missing/"></div>
+	<div class="ds-thread" data-thread-key="2014-05-linux-xiaomi-wifi-driver" data-title="linux下安装小米随身wifi的驱动，用来开启无线网卡功能" data-url="http://juicechu.zhuxi.me/2014/05/24/2014-05-linux-xiaomi-wifi-driver/"></div>
 	<!-- 多说评论框 end -->
 	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
 	<script type="text/javascript">

@@ -196,6 +196,73 @@
 </nav>
       <div class="body-wrap">
   
+    <article id="post-2014-05-fastcgi-finish-request" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2014/05/20/2014-05-fastcgi-finish-request/" class="article-date">
+  	<time datetime="2014-05-20T10:05:00.000Z" itemprop="datePublished">2014-05-20</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/20/2014-05-fastcgi-finish-request/">使用fastcgi_finish_request提高页面响应速度</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>PHP运行在FastCGI模式时,PHP FPM提供了一个名为fastcgi_finish_request的方法.按照文档上的说法,此方法可以提高请求的处理速度,如果有些处理可以在页面生成完后再进行,就可以使用这个方法.</p>
+<p>听起来可能有些茫然,我们通过几个例子来说明一下：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="keyword">echo</span> <span class="string">'例子：'</span>;</span><br><span class="line">fastcgi_finish_request(); <span class="comment">/* 响应完成, 关闭连接 */</span></span><br><span class="line"><span class="comment">/* 记录日志 */</span></span><br><span class="line">file_put_contents(<span class="string">'log.txt'</span>, <span class="string">'生存还是毁灭,这是个问题.'</span>);</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>通过浏览器访问此脚本, 结果发现并没有输出相应的字符串,但却生成了相应的文件.由此说明在调用fastcgi_finish_request后,客户端响应就已经结束,但与此同时服务端脚本却继续运行！</p>
+<p>合理利用这个特性可以大大提升用户体验,趁热打铁再来一个例子：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="keyword">echo</span> <span class="string">'例子：'</span>;</span><br><span class="line">file_put_contents(<span class="string">'log.txt'</span>, date(<span class="string">'Y-m-d H:i:s'</span>) . <span class="string">" 上传视频\n"</span>, FILE_APPEND);</span><br><span class="line">fastcgi_finish_request();</span><br><span class="line">sleep(<span class="number">1</span>);</span><br><span class="line">file_put_contents(<span class="string">'log.txt'</span>, date(<span class="string">'Y-m-d H:i:s'</span>) . <span class="string">" 转换格式\n"</span>, FILE_APPEND);</span><br><span class="line">sleep(<span class="number">1</span>);</span><br><span class="line">file_put_contents(<span class="string">'log.txt'</span>, date(<span class="string">'Y-m-d H:i:s'</span>) . <span class="string">" 提取图片\n"</span>, FILE_APPEND);</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure>
+<p>代码里用sleep模拟一些耗时的操作,浏览时没有被堵塞,程序却都执行了,具体看日志.</p>
+<p>末了给您提个醒,Yahoo在Best Practices for Speeding Up Your Web Site中提到了Flush the Buffer Early,也就是利用PHP中的flush方法把内容尽快发到客户端去,它和本文介绍的fastcgi_finish_request有些许的类似.</p>
+<p>转载附言: 我看了下这个方法, 在调用的时候, 会发送响应, 关闭连接. 但是不会结束PHP的运行. 相比调用flush, 或者我之前介绍的加速你的Echo来说, 这个方法能更加干脆一些.</p>
+<p>另外, 从代码的可移植性讲的话, 可以在代码中附上如下代码:</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> (!function_exists(<span class="string">"fastcgi_finish_request"</span>)) &#123;</span><br><span class="line">    <span class="function"><span class="keyword">function</span> <span class="title">fastcgi_finish_request</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不会造成代码部署在非fpm环境下造成问题.</p>
+<p>文章转自: <a href="http://huoding.com/2011/04/12/63" target="_blank" rel="external">火丁笔记</a></p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+      
+	<div class="article-category tagcloud">
+	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/PHP/">PHP</a>
+	</div>
+
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
     <article id="post-2014-05-php5.2-upgrade-php5.6" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
