@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>实现文本相似度算法（余弦定理）(转) | juice 博客</title>
+  <title>实现文本相似度算法（余弦定理）(转) | juice 的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="最近由于工作项目，需要判断两个txt文本是否相似，于是开始在网上找资料研究，因为在程序中会把文本转换成String再做比较，所以最开始找到了这篇关于 距离编辑算法 Blog写的非常好，受益匪浅。
 于是我决定把它用到项目中，来判断两个文本的相似度。但后来实际操作发现有一些问题：直接说就是查询一本书中的相似章节花了我7、8分钟；这是我不能接受……
@@ -11,19 +11,19 @@
 <meta property="og:type" content="article">
 <meta property="og:title" content="实现文本相似度算法（余弦定理）(转)">
 <meta property="og:url" content="http://blog.zhuxi.me/2013/08/25/2013-08-text-similarity-algorithm/index.html">
-<meta property="og:site_name" content="juice 博客">
+<meta property="og:site_name" content="juice 的博客">
 <meta property="og:description" content="最近由于工作项目，需要判断两个txt文本是否相似，于是开始在网上找资料研究，因为在程序中会把文本转换成String再做比较，所以最开始找到了这篇关于 距离编辑算法 Blog写的非常好，受益匪浅。
 于是我决定把它用到项目中，来判断两个文本的相似度。但后来实际操作发现有一些问题：直接说就是查询一本书中的相似章节花了我7、8分钟；这是我不能接受……
 于是停下来仔细分析发现，这种算法在此项目中不是特别适用">
 <meta property="og:image" content="http://static.oschina.net/uploads/space/2012/0304/163822_kpyP_100580.png">
-<meta property="og:updated_time" content="2015-10-15T01:49:58.000Z">
+<meta property="og:updated_time" content="2017-11-11T04:53:37.184Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="实现文本相似度算法（余弦定理）(转)">
 <meta name="twitter:description" content="最近由于工作项目，需要判断两个txt文本是否相似，于是开始在网上找资料研究，因为在程序中会把文本转换成String再做比较，所以最开始找到了这篇关于 距离编辑算法 Blog写的非常好，受益匪浅。
 于是我决定把它用到项目中，来判断两个文本的相似度。但后来实际操作发现有一些问题：直接说就是查询一本书中的相似章节花了我7、8分钟；这是我不能接受……
 于是停下来仔细分析发现，这种算法在此项目中不是特别适用">
   
-    <link rel="alternative" href="/atom.xml" title="juice 博客" type="application/atom+xml">
+    <link rel="alternative" href="/atom.xml" title="juice 的博客" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.ico">
@@ -102,7 +102,7 @@
 				        
 							<li><a href="/archives">所有文章</a></li>
 				        
-							<li><a href="/categories/原创">原创</a></li>
+							<li><a href="/tags/原创/">原创</a></li>
 				        
 						</ul>
 					</nav>
@@ -124,7 +124,7 @@
 				
 				<section class="switch-part switch-part2">
 					<div class="widget tagcloud" id="js-tagcloud">
-						
+						<a href="/tags/CSRF/" style="font-size: 10px;">CSRF</a> <a href="/tags/Linux/" style="font-size: 12.5px;">Linux</a> <a href="/tags/PHP/" style="font-size: 17.5px;">PHP</a> <a href="/tags/原创/" style="font-size: 20px;">原创</a> <a href="/tags/转载/" style="font-size: 15px;">转载</a>
 					</div>
 				</section>
 				
@@ -175,7 +175,7 @@
 		        
 					<li><a href="/archives">所有文章</a></li>
 		        
-					<li><a href="/categories/原创">原创</a></li>
+					<li><a href="/tags/原创/">原创</a></li>
 		        
 		        <div class="clearfix"></div>
 				</ul>
@@ -221,11 +221,11 @@
       
       <div class="article-info article-info-post">
         
-        
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a>
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/转载/">转载</a></li></ul>
 	</div>
 
+        
 
         <div class="clearfix"></div>
       </div>
@@ -301,34 +301,30 @@
 
 
 
-<div class="duoshuo">
-	<!-- 多说评论框 start -->
-	<div class="ds-thread" data-thread-key="2013-08-text-similarity-algorithm" data-title="实现文本相似度算法（余弦定理）(转)" data-url="http://blog.zhuxi.me/2013/08/25/2013-08-text-similarity-algorithm/"></div>
-	<!-- 多说评论框 end -->
-	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-	<script type="text/javascript">
-	var duoshuoQuery = {short_name:"zhuxiblog"};
-	(function() {
-		var ds = document.createElement('script');
-		ds.type = 'text/javascript';ds.async = true;
-		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-		ds.charset = 'UTF-8';
-		(document.getElementsByTagName('head')[0] 
-		 || document.getElementsByTagName('body')[0]).appendChild(ds);
-	})();
-	</script>
-	<!-- 多说公共JS代码 end -->
-</div>
 
 
+<section id="comments">
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'juiceblog'; // required: replace example with your forum shortname
 
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
 
 </div>
       <footer id="footer">
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2015 juice
+    		&copy; 2017 juice
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten

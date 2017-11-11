@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Archives | juice 博客</title>
+  <title>Archives | juice 的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="blog.zhuxi.me">
 <meta property="og:type" content="website">
-<meta property="og:title" content="juice 博客">
+<meta property="og:title" content="juice 的博客">
 <meta property="og:url" content="http://blog.zhuxi.me/archives/page/3/index.html">
-<meta property="og:site_name" content="juice 博客">
+<meta property="og:site_name" content="juice 的博客">
 <meta property="og:description" content="blog.zhuxi.me">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="juice 博客">
+<meta name="twitter:title" content="juice 的博客">
 <meta name="twitter:description" content="blog.zhuxi.me">
   
-    <link rel="alternative" href="/atom.xml" title="juice 博客" type="application/atom+xml">
+    <link rel="alternative" href="/atom.xml" title="juice 的博客" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.ico">
@@ -94,7 +94,7 @@
 				        
 							<li><a href="/archives">所有文章</a></li>
 				        
-							<li><a href="/categories/原创">原创</a></li>
+							<li><a href="/tags/原创/">原创</a></li>
 				        
 						</ul>
 					</nav>
@@ -116,7 +116,7 @@
 				
 				<section class="switch-part switch-part2">
 					<div class="widget tagcloud" id="js-tagcloud">
-						
+						<a href="/tags/CSRF/" style="font-size: 10px;">CSRF</a> <a href="/tags/Linux/" style="font-size: 12.5px;">Linux</a> <a href="/tags/PHP/" style="font-size: 17.5px;">PHP</a> <a href="/tags/原创/" style="font-size: 20px;">原创</a> <a href="/tags/转载/" style="font-size: 15px;">转载</a>
 					</div>
 				</section>
 				
@@ -167,7 +167,7 @@
 		        
 					<li><a href="/archives">所有文章</a></li>
 		        
-					<li><a href="/categories/原创">原创</a></li>
+					<li><a href="/tags/原创/">原创</a></li>
 		        
 		        <div class="clearfix"></div>
 				</ul>
@@ -189,6 +189,61 @@
 	</div>
 </nav>
       <div class="body-wrap">
+  
+    <article id="post-2013-10-text-similarity-algorithm-php" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/10/03/2013-10-text-similarity-algorithm-php/" class="article-date">
+  	<time datetime="2013-10-02T17:09:00.000Z" itemprop="datePublished">2013-10-03</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/10/03/2013-10-text-similarity-algorithm-php/">用余弦定理实现文本相似度算法</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>续上一篇文章的算法，这次自己改成PHP版本，当然如果有优化的地方请指出，以便大家学习。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line">header(<span class="string">'Content-Type: text/html; charset=UTF-8'</span>);</span><br><span class="line"><span class="variable">$text1</span> = <span class="string">&lt;&lt;&lt;EOF</span><br><span class="line">Fragment A (By Rousseau)：</span><br><span class="line">À l’instant, au lieu de la personne particulière de chaque contractant, cet acte d’association produit un Corps moral et collectif, composé d’autant de membres que l’assemblée a de voix, lequel reçoit de ce même acte son unité, son moi commun, sa vie et sa volonté. Cette personne publique, qui se forme ainsi par l’union de toutes les autres, prenait autrefois le nom de Cité , et prend maintenant celui de République ou de Corps politique: lequel est appelé par ses membres État quand il est passif, Souverain quand il est actif, Puissance en le comparant à ses semblables. À l’égard des associés, ils prennent collectivement le nom de peuple, et s’appellent en particulier citoyens, comme participant à l’autorité souveraine, et sujets, comme soumis aux lois de l’État. (Rousseau, Du contrat social, I.6)</span><br><span class="line">EOF;</span></span><br><span class="line"><span class="variable">$text2</span> = <span class="string">&lt;&lt;&lt;EOF</span><br><span class="line">Fragment B (By Hobbes)：</span><br><span class="line">Art goes yet further, imitating that Rationall and most excellent worke of Nature, Man. For by Art is created that great LEVIATHAN called a COMMON-WEALTH, or STATE, (in latine CIVITAS) which is but an Artificiall Man; though of greater stature and strength than the Naturall, for whoseprotection and defence it was intended; and in which, the Soveraignty is an Artificiall Soul, as giving life and motion to the whole body; The Magistrates, and other Officers of Judicature and Execution, artificiall Joynts; Reward and Punishment (by which fastned to the seat of the Soveraignty, every joynt and member is moved to performe his duty) are the Nerves, that do the same in the Body Naturall; The Wealth and Riches of all the particular members, are the Strength; Salus Populi (the Peoples Safety) its Businesse; Counsellors, by whom all things needfull for it to know, are suggested unto it, are the Memory; Equity and Lawes, an artificiall Reason and Will; Concord, Health; Sedition, Sicknesse; and Civill War, Death. Lastly, the Pacts and Covenants, by which the parts of this Body Politique were at first made, set together, and united, resemble that Fiat, or the Let Us Make Man, pronounced by God in the Creation. (Hobbes, Leviathan, "Introduction"）</span><br><span class="line">EOF;</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> similarAlgorithm(<span class="variable">$text1</span> , <span class="variable">$text2</span>);</span><br><span class="line"><span class="comment">/*</span><br><span class="line">* 文本相似度匹配</span><br><span class="line">* <span class="doctag">@author</span> juice</span><br><span class="line">* <span class="doctag">@param</span> text1 匹配文本1</span><br><span class="line">* <span class="doctag">@param</span> text2 匹配文本2</span><br><span class="line">* <span class="doctag">@return</span> double 返回相似度(余弦值)</span><br><span class="line">*/</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">similarAlgorithm</span><span class="params">(<span class="variable">$text1</span> = <span class="string">''</span> , <span class="variable">$text2</span> = <span class="string">''</span>)</span></span>&#123;</span><br><span class="line">    <span class="variable">$charset</span> = <span class="string">'UTF-8'</span> ;</span><br><span class="line">    <span class="variable">$text1Array</span> = mbStringToArray(<span class="variable">$text1</span> , <span class="variable">$charset</span> ,<span class="keyword">TRUE</span>);</span><br><span class="line">    <span class="variable">$text2Array</span> = mbStringToArray(<span class="variable">$text2</span> , <span class="variable">$charset</span> ,<span class="keyword">TRUE</span>);</span><br><span class="line">    <span class="variable">$textSumArray</span> = <span class="keyword">array</span>();</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$text1Array</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)&#123;<span class="comment">//统计该字在第一文本中出现的次数</span></span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$textSumArray</span>[<span class="variable">$val</span>]))&#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">0</span>]++;</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">0</span>] = <span class="number">1</span>;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">1</span>] = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$text2Array</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)&#123;<span class="comment">//统计该字在第二文本中出现的次数</span></span><br><span class="line">        <span class="keyword">if</span>(<span class="keyword">isset</span>(<span class="variable">$textSumArray</span>[<span class="variable">$val</span>]))&#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">1</span>]++;</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">0</span>] = <span class="number">0</span>;</span><br><span class="line">            <span class="variable">$textSumArray</span>[<span class="variable">$val</span>][<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="variable">$sqdoc1</span> = <span class="number">0</span>;<span class="comment">//平方和</span></span><br><span class="line">    <span class="variable">$sqdoc2</span> = <span class="number">0</span>;<span class="comment">//平方和</span></span><br><span class="line">    <span class="variable">$denominator</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$textSumArray</span> <span class="keyword">as</span> <span class="variable">$key</span> =&gt; <span class="variable">$val</span>)&#123;</span><br><span class="line">        <span class="variable">$denominator</span> += <span class="variable">$val</span>[<span class="number">0</span>] * <span class="variable">$val</span>[<span class="number">1</span>];</span><br><span class="line">        <span class="variable">$sqdoc1</span> += <span class="variable">$val</span>[<span class="number">0</span>] * <span class="variable">$val</span>[<span class="number">0</span>];</span><br><span class="line">        <span class="variable">$sqdoc2</span> += <span class="variable">$val</span>[<span class="number">1</span>] * <span class="variable">$val</span>[<span class="number">1</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$denominator</span> / sqrt(<span class="variable">$sqdoc1</span>*<span class="variable">$sqdoc2</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">/*</span><br><span class="line">* 分割字符串方法 （支持中文分割）</span><br><span class="line">* <span class="doctag">@author</span> juice</span><br><span class="line">* <span class="doctag">@param</span> str 需要分割的字符串</span><br><span class="line">* <span class="doctag">@param</span> charset 字符串的编码，默认UTF-8</span><br><span class="line">* <span class="doctag">@param</span> convertedToHex 是否返回该字符的16进制，TRUE返回每个字符16进制，FALSE则返回原本字符</span><br><span class="line">* <span class="doctag">@return</span> double 返回相似度(余弦值)</span><br><span class="line">*/</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">mbStringToArray</span><span class="params">(<span class="variable">$str</span> = <span class="string">''</span>,<span class="variable">$charset</span> = <span class="string">'UTF-8'</span> , <span class="variable">$convertedToHex</span> = FALSE)</span> </span>&#123;</span><br><span class="line">    <span class="variable">$strlen</span> = mb_strlen(<span class="variable">$str</span>);</span><br><span class="line">    <span class="keyword">if</span>( <span class="variable">$convertedToHex</span> === <span class="keyword">TRUE</span> )&#123;</span><br><span class="line">        <span class="keyword">while</span>(<span class="variable">$strlen</span>)&#123;</span><br><span class="line">            <span class="variable">$array</span>[] = bin2hex(mb_substr(<span class="variable">$str</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="variable">$charset</span>));</span><br><span class="line">            <span class="variable">$str</span> = mb_substr(<span class="variable">$str</span>,<span class="number">1</span>,<span class="variable">$strlen</span>,<span class="variable">$charset</span>);</span><br><span class="line">            <span class="variable">$strlen</span> = mb_strlen(<span class="variable">$str</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">        <span class="keyword">while</span>(<span class="variable">$strlen</span>)&#123;</span><br><span class="line">            <span class="variable">$array</span>[] = mb_substr(<span class="variable">$str</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="variable">$charset</span>);</span><br><span class="line">            <span class="variable">$str</span> = mb_substr(<span class="variable">$str</span>,<span class="number">1</span>,<span class="variable">$strlen</span>,<span class="variable">$charset</span>);</span><br><span class="line">            <span class="variable">$strlen</span> = mb_strlen(<span class="variable">$str</span>);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$array</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="preprocessor">?&gt;</span></span><br></pre></td></tr></table></figure></p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原创/">原创</a></li></ul>
+	</div>
+
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
   
     <article id="post-2013-09-curl-400-bad-request" class="article article-type-post" itemscope itemprop="blogPost">
   
@@ -227,11 +282,11 @@
     <div class="article-info article-info-index">
       
       
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a>
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原创/">原创</a></li></ul>
 	</div>
 
+      
 
       
       <div class="clearfix"></div>
@@ -291,11 +346,11 @@
     <div class="article-info article-info-index">
       
       
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a>
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/转载/">转载</a></li></ul>
 	</div>
 
+      
 
       
       <div class="clearfix"></div>
@@ -411,11 +466,11 @@
     <div class="article-info article-info-index">
       
       
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a>
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/CSRF/">CSRF</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/转载/">转载</a></li></ul>
 	</div>
 
+      
 
       
       <div class="clearfix"></div>
@@ -596,11 +651,11 @@
     <div class="article-info article-info-index">
       
       
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a>
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/转载/">转载</a></li></ul>
 	</div>
 
+      
 
       
       <div class="clearfix"></div>
@@ -679,7 +734,7 @@
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2015 juice
+    		&copy; 2017 juice
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten

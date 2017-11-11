@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   
-  <title>vps上搭建pptp的vpn | juice 博客</title>
+  <title>vps上搭建pptp的vpn | juice 的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="pptp配置
 安装pptp
@@ -14,14 +14,14 @@ sudo apt-get -y updatesudo apt-get -y install pptpd修改配置脚本
 <meta property="og:type" content="article">
 <meta property="og:title" content="vps上搭建pptp的vpn">
 <meta property="og:url" content="http://blog.zhuxi.me/2014/09/23/2014-09-vps-pptp-vpn/index.html">
-<meta property="og:site_name" content="juice 博客">
+<meta property="og:site_name" content="juice 的博客">
 <meta property="og:description" content="pptp配置
 安装pptp
 用ubuntu就是安装东西快
 sudo apt-get -y updatesudo apt-get -y install pptpd修改配置脚本
 配置一下dns
 12345678910111213141516cat &amp;gt;/etc/ppp/options.pptpd &amp;lt;&amp;lt;ENDname pptpdrefuse-paprefuse-chaprefuse-ms">
-<meta property="og:updated_time" content="2015-10-16T02:01:24.000Z">
+<meta property="og:updated_time" content="2017-11-11T04:51:26.192Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="vps上搭建pptp的vpn">
 <meta name="twitter:description" content="pptp配置
@@ -31,7 +31,7 @@ sudo apt-get -y updatesudo apt-get -y install pptpd修改配置脚本
 配置一下dns
 12345678910111213141516cat &amp;gt;/etc/ppp/options.pptpd &amp;lt;&amp;lt;ENDname pptpdrefuse-paprefuse-chaprefuse-ms">
   
-    <link rel="alternative" href="/atom.xml" title="juice 博客" type="application/atom+xml">
+    <link rel="alternative" href="/atom.xml" title="juice 的博客" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.ico">
@@ -110,7 +110,7 @@ sudo apt-get -y updatesudo apt-get -y install pptpd修改配置脚本
 				        
 							<li><a href="/archives">所有文章</a></li>
 				        
-							<li><a href="/categories/原创">原创</a></li>
+							<li><a href="/tags/原创/">原创</a></li>
 				        
 						</ul>
 					</nav>
@@ -132,7 +132,7 @@ sudo apt-get -y updatesudo apt-get -y install pptpd修改配置脚本
 				
 				<section class="switch-part switch-part2">
 					<div class="widget tagcloud" id="js-tagcloud">
-						
+						<a href="/tags/CSRF/" style="font-size: 10px;">CSRF</a> <a href="/tags/Linux/" style="font-size: 12.5px;">Linux</a> <a href="/tags/PHP/" style="font-size: 17.5px;">PHP</a> <a href="/tags/原创/" style="font-size: 20px;">原创</a> <a href="/tags/转载/" style="font-size: 15px;">转载</a>
 					</div>
 				</section>
 				
@@ -183,7 +183,7 @@ sudo apt-get -y updatesudo apt-get -y install pptpd修改配置脚本
 		        
 					<li><a href="/archives">所有文章</a></li>
 		        
-					<li><a href="/categories/原创">原创</a></li>
+					<li><a href="/tags/原创/">原创</a></li>
 		        
 		        <div class="clearfix"></div>
 				</ul>
@@ -229,11 +229,11 @@ sudo apt-get -y updatesudo apt-get -y install pptpd修改配置脚本
       
       <div class="article-info article-info-post">
         
-        
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/原创/">原创</a><a class="article-category-link" href="/categories/原创/Linux/">Linux</a>
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原创/">原创</a></li></ul>
 	</div>
 
+        
 
         <div class="clearfix"></div>
       </div>
@@ -318,34 +318,30 @@ sudo apt-get -y updatesudo apt-get -y install pptpd修改配置脚本
 
 
 
-<div class="duoshuo">
-	<!-- 多说评论框 start -->
-	<div class="ds-thread" data-thread-key="2014-09-vps-pptp-vpn" data-title="vps上搭建pptp的vpn" data-url="http://blog.zhuxi.me/2014/09/23/2014-09-vps-pptp-vpn/"></div>
-	<!-- 多说评论框 end -->
-	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
-	<script type="text/javascript">
-	var duoshuoQuery = {short_name:"zhuxiblog"};
-	(function() {
-		var ds = document.createElement('script');
-		ds.type = 'text/javascript';ds.async = true;
-		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
-		ds.charset = 'UTF-8';
-		(document.getElementsByTagName('head')[0] 
-		 || document.getElementsByTagName('body')[0]).appendChild(ds);
-	})();
-	</script>
-	<!-- 多说公共JS代码 end -->
-</div>
 
 
+<section id="comments">
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+    var disqus_shortname = 'juiceblog'; // required: replace example with your forum shortname
 
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</section>
 
 </div>
       <footer id="footer">
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2015 juice
+    		&copy; 2017 juice
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten

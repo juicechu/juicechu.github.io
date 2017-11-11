@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Category: PHP | juice 博客</title>
+  <title>Tag: PHP | juice 的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="blog.zhuxi.me">
 <meta property="og:type" content="website">
-<meta property="og:title" content="juice 博客">
-<meta property="og:url" content="http://blog.zhuxi.me/categories/转载/PHP/index.html">
-<meta property="og:site_name" content="juice 博客">
+<meta property="og:title" content="juice 的博客">
+<meta property="og:url" content="http://blog.zhuxi.me/tags/PHP/index.html">
+<meta property="og:site_name" content="juice 的博客">
 <meta property="og:description" content="blog.zhuxi.me">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="juice 博客">
+<meta name="twitter:title" content="juice 的博客">
 <meta name="twitter:description" content="blog.zhuxi.me">
   
-    <link rel="alternative" href="/atom.xml" title="juice 博客" type="application/atom+xml">
+    <link rel="alternative" href="/atom.xml" title="juice 的博客" type="application/atom+xml">
   
   
     <link rel="icon" href="/favicon.ico">
@@ -94,7 +94,7 @@
 				        
 							<li><a href="/archives">所有文章</a></li>
 				        
-							<li><a href="/categories/原创">原创</a></li>
+							<li><a href="/tags/原创/">原创</a></li>
 				        
 						</ul>
 					</nav>
@@ -116,7 +116,7 @@
 				
 				<section class="switch-part switch-part2">
 					<div class="widget tagcloud" id="js-tagcloud">
-						
+						<a href="/tags/CSRF/" style="font-size: 10px;">CSRF</a> <a href="/tags/Linux/" style="font-size: 12.5px;">Linux</a> <a href="/tags/PHP/" style="font-size: 17.5px;">PHP</a> <a href="/tags/原创/" style="font-size: 20px;">原创</a> <a href="/tags/转载/" style="font-size: 15px;">转载</a>
 					</div>
 				</section>
 				
@@ -167,7 +167,7 @@
 		        
 					<li><a href="/archives">所有文章</a></li>
 		        
-					<li><a href="/categories/原创">原创</a></li>
+					<li><a href="/tags/原创/">原创</a></li>
 		        
 		        <div class="clearfix"></div>
 				</ul>
@@ -189,6 +189,247 @@
 	</div>
 </nav>
       <div class="body-wrap">
+  
+    <article id="post-2014-11-linux-doc2pdf2swf" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2014/11/05/2014-11-linux-doc2pdf2swf/" class="article-date">
+  	<time datetime="2014-11-05T07:38:00.000Z" itemprop="datePublished">2014-11-05</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/11/05/2014-11-linux-doc2pdf2swf/">在linux下实现doc转pdf，再转swf，实现在线预览功能</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>首先需要在linux系统下面安装swftools，官网：<a href="http://www.swftools.org/" target="_blank" rel="external">http://www.swftools.org/</a><br>安装swftools需要安装freetype和jpeglib依赖<br>地址：<br><a href="http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz" target="_blank" rel="external">http://download.savannah.gnu.org/releases/freetype/freetype-2.5.3.tar.gz</a><br><a href="http://www.ijg.org/files/jpegsrc.v9a.tar.gz" target="_blank" rel="external">http://www.ijg.org/files/jpegsrc.v9a.tar.gz</a><br>然后再编译安装swftools<br>编辑如果出现以下出错<br><figure class="highlight oxygene"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">jpeg.c: <span class="keyword">In</span> <span class="function"><span class="keyword">function</span> ‘<span class="title">jpeg_load_from_mem</span>’:</span></span><br><span class="line">jpeg.c:<span class="number">331</span>:<span class="number">30</span>: error: ‘<span class="keyword">TRUE</span>’ undeclared (first use <span class="keyword">in</span> this <span class="function"><span class="keyword">function</span>)</span><br><span class="line"><span class="title">jpeg_read_header</span><span class="params">(&amp;cinfo, <span class="keyword">TRUE</span>)</span>;</span></span><br><span class="line">^</span><br><span class="line">jpeg.c: <span class="keyword">In</span> <span class="function"><span class="keyword">function</span> ‘<span class="title">jpeg_load</span>’:</span></span><br><span class="line">jpeg.c:<span class="number">380</span>:<span class="number">30</span>: error: ‘<span class="keyword">TRUE</span>’ undeclared (first use <span class="keyword">in</span> this <span class="function"><span class="keyword">function</span>)</span><br><span class="line"><span class="title">jpeg_read_header</span><span class="params">(&amp;cinfo, <span class="keyword">TRUE</span>)</span>;</span></span><br><span class="line">^</span><br><span class="line">jpeg.c: <span class="keyword">In</span> <span class="function"><span class="keyword">function</span> ‘<span class="title">jpeg_get_size</span>’:</span></span><br><span class="line">jpeg.c:<span class="number">462</span>:<span class="number">30</span>: error: ‘<span class="keyword">TRUE</span>’ undeclared (first use <span class="keyword">in</span> this <span class="function"><span class="keyword">function</span>)</span><br><span class="line"><span class="title">jpeg_read_header</span><span class="params">(&amp;cinfo, <span class="keyword">TRUE</span>)</span>;</span></span><br><span class="line">^</span><br><span class="line">make[<span class="number">1</span>]: *** [jpeg.o] Error <span class="number">1</span></span><br><span class="line">make[<span class="number">1</span>]: Leaving directory `/home/geekz/Downloads/swftools-<span class="number">0.9</span>.<span class="number">2</span>/lib<span class="string">'</span><br><span class="line">make: *** [all] Error 2</span></span><br></pre></td></tr></table></figure></p>
+<p>那就将源文件的lib/jpeg.c文件中的TRUE和FALSE变量分别改成1和0，又或者在文件首部加入</p>
+<figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="hexcolor">#def</span>ine TRUE <span class="number">1</span></span><br><span class="line"><span class="hexcolor">#def</span>ine FALSE <span class="number">0</span></span><br></pre></td></tr></table></figure>
+<p>swftools中文支持<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mkdir –p <span class="regexp">/usr/</span>share/xpdf</span><br><span class="line">cd <span class="regexp">/usr/</span>share<span class="regexp">/xpdf/</span></span><br></pre></td></tr></table></figure></p>
+<p>下载中文支持及字体库<br><figure class="highlight stylus"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">wget ftp:<span class="comment">//ftp.foolabs.com/pub/xpdf/xpdf-chinese-simplified.tar.gz</span></span><br><span class="line">wget http:<span class="comment">//www.nginxs.com/download/font.zip</span></span><br><span class="line">tar zxvf xpdf-chinese-simplified<span class="class">.tar</span><span class="class">.gz</span></span><br><span class="line">unzip <span class="attribute">font</span><span class="class">.zip</span></span><br><span class="line">mv Gbsn00lp<span class="class">.ttf</span> gkai00mp<span class="class">.ttf</span> xpdf-chinese-simplified/CMap/ </span><br><span class="line">cd /usr/share/xpdf/xpdf-chinese-simplified</span><br></pre></td></tr></table></figure></p>
+<p>编辑,加入新增的字体</p>
+<figure class="highlight vim"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">vim</span> <span class="built_in">add</span>-<span class="keyword">to</span>-xpdfrc</span><br></pre></td></tr></table></figure>
+<p>内容如下：<br><figure class="highlight groovy"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">cidToUnicodeAdobe-GB1<span class="regexp">/usr/</span>share<span class="regexp">/xpdf/</span>chinese-simplified/Adobe-GB1.cidToUnicode</span><br><span class="line">unicodeMapISO-<span class="number">2022</span>-CN<span class="regexp">/usr/</span>share<span class="regexp">/xpdf/</span>chinese-simplified/ISO-<span class="number">2022</span>-CN.unicodeMap</span><br><span class="line">unicodeMapEUC-CN<span class="regexp">/usr/</span>share<span class="regexp">/xpdf/</span>chinese-simplified/EUC-CN.unicodeMap</span><br><span class="line">unicodeMapGBK<span class="regexp">/usr/</span>share<span class="regexp">/xpdf/</span>chinese-simplified/GBK.unicodeMap</span><br><span class="line">cMapDirAdobe-GB1<span class="regexp">/usr/</span>share<span class="regexp">/xpdf/</span>chinese-simplified/CMap </span><br><span class="line">toUnicodeDir<span class="regexp">/usr/</span>share<span class="regexp">/xpdf/</span>chinese-simplified/CMap</span><br><span class="line">displayCIDFontTT Adobe-GB1 <span class="regexp">/usr/</span>share<span class="regexp">/xpdf/</span>chinese-simplified<span class="regexp">/CMap/</span>gkai00mp.ttf</span><br></pre></td></tr></table></figure></p>
+<p>保存后退出<br>要在浏览器里面复制中文到剪贴页不乱码，必须要在JS代码参数里面添加localeChain: ‘zh_CN’</p>
+<p>安装unoconv：<code>sudo apt-get install unoconv</code><br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exec(<span class="string">"sudo unoconv -f pdf -o &#123;$abPdfPath&#125; &#123;$abPath&#125;"</span>, <span class="variable">$output</span>, <span class="variable">$status</span>);</span><br></pre></td></tr></table></figure></p>
+<p>需要赋予www-data对unoconv的执行权限<br>执行sudo visudo，在最后加上 <code>www-data ALL=NOPASSWD:/usr/bin/unoconv</code><br>这样 www-data 就可以运行 unoconv 了</p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Linux/">Linux</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原创/">原创</a></li></ul>
+	</div>
+
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2014-10-dedecms" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2014/10/10/2014-10-dedecms/" class="article-date">
+  	<time datetime="2014-10-10T07:03:00.000Z" itemprop="datePublished">2014-10-10</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/10/10/2014-10-dedecms/">关于dedecms的问题</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>由于业务关系，需要维护一个用dedecms搭建的官网，一开始以为时一两个就能将迁移的事情做好，但是发现迁移后，各种问题就来了。</p>
+<ol>
+<li>首先，这个官网已经时被入侵过了里面，都挂着很多游戏私服的广告，将它清理掉后，对线上的服务器针对这个官网做了些权限的限制。</li>
+</ol>
+<p>2.重要的问题来了，迁移后居然发现无法编辑文章，折腾了一整天，后来才发现原来时PHP版本的问题，dedecms暂时还没有支持到PHP5.3的版本，所以在某些地方会出现问题。<br>例如：</p>
+<p>htmlspecialchars在php5.4默认为utf8编码，gbk编码字符串经 htmlspecialchars 转义后的中文字符串为空，所以对于GBK的版本来说会一直返回空，导致很多文章内容都为空，解决办法时</p>
+<p>解决办法：给htmlspecialchars添加ENT_COMPAT ,’GB2312’参数修改编码默认值。</p>
+<p>具体修改页面：</p>
+<p>1、dede/article_add.php 和 dede/article_edit.php<br>将<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$title</span> = htmlspecialchars(cn_substrR(<span class="variable">$title</span>,<span class="variable">$cfg_title_maxlen</span>));</span><br><span class="line">改成</span><br><span class="line"><span class="variable">$title</span> = htmlspecialchars(cn_substrR(<span class="variable">$title</span>,<span class="variable">$cfg_title_maxlen</span>),ENT_COMPAT ,<span class="string">'GB2312'</span>);</span><br></pre></td></tr></table></figure></p>
+<p>2、include/ckeditor/ckeditor_php5.php 138行<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">将 htmlspecialchars(<span class="variable">$value</span>)  替换为 htmlspecialchars(<span class="variable">$value</span>, ENT_COMPAT ,<span class="string">'GB2312'</span>)</span><br></pre></td></tr></table></figure></p>
+<p>测试，发布文章成功。</p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原创/">原创</a></li></ul>
+	</div>
+
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2014-05-php-arithmetic" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2014/05/24/2014-05-php-arithmetic/" class="article-date">
+  	<time datetime="2014-05-24T15:52:00.000Z" itemprop="datePublished">2014-05-24</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/24/2014-05-php-arithmetic/">php 两个无限位数长度数的加减乘除算法</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?php</span></span><br><span class="line"><span class="comment">//用字符串存放需要计算的数字</span></span><br><span class="line"><span class="variable">$var1</span> = <span class="string">'1812333333333333333333333333333312312312365465115168798845654646546541654623645654654132165798498799935965878749878990802045729820438846724720077549820225200070877958874065976960871699930588877830002524992671885461625646546546546546546126154654654'</span>;</span><br><span class="line"><span class="variable">$var2</span> = <span class="string">'2364565465413216579849879812363254541654565746871239648712653441235461243465142635441623141233241132234461523446512341236454126344612534'</span>;</span><br><span class="line"><span class="variable">$result</span> = countNum(<span class="variable">$var1</span>, <span class="variable">$var2</span>);</span><br><span class="line"></span><br><span class="line"><span class="variable">$maxLength</span> = count(<span class="variable">$result</span>);</span><br><span class="line"><span class="keyword">for</span>( <span class="variable">$num</span> = <span class="variable">$maxLength</span> - <span class="number">1</span>; <span class="variable">$num</span> &gt;= <span class="number">0</span>; <span class="variable">$num</span>-- )&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="variable">$result</span>[<span class="variable">$num</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/**</span><br><span class="line"> * <span class="doctag">@name</span> 计算两个数的加法</span><br><span class="line"> * <span class="doctag">@author</span> geekzhumail<span class="doctag">@gmail</span>.com</span><br><span class="line"> * <span class="doctag">@since</span> 2014-03-16</span><br><span class="line"> * <span class="doctag">@param</span> var1 第一个数字</span><br><span class="line"> * <span class="doctag">@param</span> var2 第二个数字</span><br><span class="line"> */</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">countNum</span><span class="params">( <span class="variable">$var1</span>, <span class="variable">$var2</span> )</span></span>&#123;</span><br><span class="line">    <span class="variable">$result</span> = <span class="keyword">array</span>();<span class="comment">//结果</span></span><br><span class="line">    <span class="variable">$var1Length</span> = strlen( <span class="variable">$var1</span> );</span><br><span class="line">    <span class="variable">$var2Length</span> = strlen( <span class="variable">$var2</span> );</span><br><span class="line">    <span class="variable">$maxLength</span> = (<span class="variable">$var1Length</span> &gt;= <span class="variable">$var2Length</span> )?<span class="variable">$var1Length</span>:<span class="variable">$var2Length</span>;</span><br><span class="line">    <span class="variable">$temp</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="variable">$num</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>( <span class="keyword">true</span> )&#123;</span><br><span class="line">        <span class="variable">$temp1</span> = (<span class="variable">$num</span> &gt;= <span class="variable">$var1Length</span> )?<span class="number">0</span>:<span class="variable">$var1</span>[<span class="variable">$var1Length</span> - <span class="variable">$num</span> - <span class="number">1</span>];</span><br><span class="line">        <span class="variable">$temp2</span> = (<span class="variable">$num</span> &gt;= <span class="variable">$var2Length</span> )?<span class="number">0</span>:<span class="variable">$var2</span>[<span class="variable">$var2Length</span> - <span class="variable">$num</span> - <span class="number">1</span>];</span><br><span class="line">        <span class="variable">$temp</span> += <span class="variable">$temp1</span> + <span class="variable">$temp2</span>;</span><br><span class="line">        <span class="variable">$temp</span> = str_split(<span class="variable">$temp</span>);</span><br><span class="line">        <span class="comment">//var_dump($temp);</span></span><br><span class="line">        <span class="comment">//exit;</span></span><br><span class="line">        <span class="variable">$result</span>[<span class="variable">$num</span>] = ( count( <span class="variable">$temp</span> ) &gt; <span class="number">1</span> )?<span class="variable">$temp</span>[<span class="number">1</span>]:<span class="variable">$temp</span>[<span class="number">0</span>];</span><br><span class="line">        <span class="variable">$temp</span> = ( count( <span class="variable">$temp</span> ) &gt; <span class="number">1</span> )?<span class="variable">$temp</span>[<span class="number">0</span>]:<span class="number">0</span>;</span><br><span class="line">        <span class="variable">$num</span>++;</span><br><span class="line">        <span class="keyword">if</span>( <span class="variable">$num</span> == <span class="variable">$maxLength</span> )&#123;</span><br><span class="line">            <span class="keyword">if</span>( <span class="variable">$temp</span> != <span class="number">0</span> ) &#123;</span><br><span class="line">                <span class="variable">$result</span>[<span class="variable">$num</span>] = <span class="variable">$temp</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$result</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原创/">原创</a></li></ul>
+	</div>
+
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2014-05-codeigniter-email-ssl" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2014/05/24/2014-05-codeigniter-email-ssl/" class="article-date">
+  	<time datetime="2014-05-24T15:47:00.000Z" itemprop="datePublished">2014-05-24</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2014/05/24/2014-05-codeigniter-email-ssl/">使用fastcgi_finish_request提高页面响应速度</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>CI的email类是支持SSL加密的，只要设置 $config[‘smtp_crypto’] = ‘ssl’; 就行了，官方文档上面没有写这个，太坑了。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable">$config</span>[<span class="string">'protocol'</span>] = <span class="string">'smtp'</span>;<span class="comment">// mail, sendmail, or smtp</span></span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_host'</span>] = <span class="string">'smtp.163.com'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_user'</span>] = <span class="string">'XXX@163.com'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_pass'</span>] = <span class="string">'XXX'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_port'</span>] = <span class="string">'465'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'smtp_crypto'</span>] = <span class="string">'ssl'</span>;</span><br><span class="line"><span class="variable">$config</span>[<span class="string">'charset'</span>] = <span class="string">'UTF-8'</span>;<span class="comment">// 默认UTF-8</span></span><br><span class="line"><span class="variable">$config</span>[<span class="string">'wordwrap'</span>] = <span class="keyword">true</span>;<span class="comment">//自动换行</span></span><br></pre></td></tr></table></figure></p>
+<p>done!</p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原创/">原创</a></li></ul>
+	</div>
+
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
   
     <article id="post-2014-05-fastcgi-finish-request" class="article article-type-post" itemscope itemprop="blogPost">
   
@@ -236,11 +477,11 @@
     <div class="article-info article-info-index">
       
       
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/PHP/">PHP</a>
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/转载/">转载</a></li></ul>
 	</div>
 
+      
 
       
       <div class="clearfix"></div>
@@ -475,11 +716,11 @@
     <div class="article-info article-info-index">
       
       
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/PHP/">PHP</a>
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/转载/">转载</a></li></ul>
 	</div>
 
+      
 
       
       <div class="clearfix"></div>
@@ -550,11 +791,186 @@
     <div class="article-info article-info-index">
       
       
-      
-	<div class="article-category tagcloud">
-	<a class="article-category-link" href="/categories/转载/">转载</a><a class="article-category-link" href="/categories/转载/PHP/">PHP</a>
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/转载/">转载</a></li></ul>
 	</div>
 
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2013-10-multi-process-write" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/10/27/2013-10-multi-process-write/" class="article-date">
+  	<time datetime="2013-10-27T13:17:00.000Z" itemprop="datePublished">2013-10-27</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/10/27/2013-10-multi-process-write/">多进程写文件</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 多进程写文件</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">write_file</span><span class="params">(<span class="variable">$filename</span>, <span class="variable">$content</span>)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="variable">$lock</span> = <span class="variable">$filename</span> . <span class="string">'.lck'</span>;<span class="comment">//与文件名关联的加锁文件</span></span><br><span class="line">    <span class="variable">$write_length</span> = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">        <span class="keyword">if</span>( file_exists(<span class="variable">$lock</span>) ) &#123;<span class="comment">//判断是否已存在该锁，存在则证明已有进程在写文件，休眠100毫秒</span></span><br><span class="line">            usleep(<span class="number">100</span>);<span class="comment">//休眠100毫秒</span></span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            touch(<span class="variable">$lock</span>);<span class="comment">//加锁</span></span><br><span class="line">            <span class="variable">$write_length</span> = file_put_contents(<span class="variable">$filename</span>, <span class="variable">$content</span>, FILE_APPEND);<span class="comment">//写文件</span></span><br><span class="line">            <span class="keyword">break</span>;<span class="comment">//退出循环</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span>( file_exists(<span class="variable">$lock</span>) ) &#123;</span><br><span class="line">        unlink(<span class="variable">$lock</span>);<span class="comment">//解锁</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$write_length</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原创/">原创</a></li></ul>
+	</div>
+
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2013-10-php-foreach-object" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/10/27/2013-10-php-foreach-object/" class="article-date">
+  	<time datetime="2013-10-27T13:12:00.000Z" itemprop="datePublished">2013-10-27</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/10/27/2013-10-php-foreach-object/">使对象可以像数组一样进行foreach循环，要求属性必须是私有。(Iterator模式的PHP5实现，写一类实现Iterator接口)</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>使对象可以像数组一样进行foreach循环，要求属性必须是私有。</p>
+<p>刚接触到题的时候，我也没有考虑到Iterator模式，试了几个一般想法，失败以后。。。。就直接去翻看了foreach的源码实现，期望发现foreach处理对象的时候是否有什么特殊性，可以做为突破口。</p>
+<p>跟踪了半天以后发现了核心逻辑中的一个奇怪的switch:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> (zend_iterator_unwrap(<span class="built_in">array</span>, &amp;iter TSRMLS_CC)) &#123;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">case</span> ZEND_ITER_INVALID:</span><br><span class="line">               .....</span><br><span class="line">               <span class="keyword">break</span></span><br><span class="line">        <span class="keyword">case</span> ZEND_ITER_PLAIN_OBJECT: &#123;</span><br><span class="line">                ......</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">     <span class="keyword">case</span> ZEND_ITER_PLAIN_ARRAY:</span><br><span class="line">            .....</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">        <span class="keyword">case</span> ZEND_ITER_OBJECT:</span><br><span class="line">            ......</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>从这个结构，我们可以看到，对象分为ZEND_ITER_OBJECT和ZEND_ITER_PLAIN_OBJECT, 这是什么意思呢？</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">ZEND_API <span class="keyword">enum</span> zend_object_iterator_kind <span class="title">zend_iterator_unwrap</span><span class="params">(</span><br><span class="line">    zval *array_ptr, zend_object_iterator **iter TSRMLS_DC)</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">switch</span> (Z_TYPE_P(array_ptr)) &#123;</span><br><span class="line">        <span class="keyword">case</span> IS_OBJECT:</span><br><span class="line">            <span class="keyword">if</span> (Z_OBJ_HT_P(array_ptr) == &amp;iterator_object_handlers) &#123;</span><br><span class="line">                *iter = (zend_object_iterator *)zend_object_store_get_object(array_ptr TSRMLS_CC);</span><br><span class="line">                <span class="keyword">return</span> ZEND_ITER_OBJECT;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span> (HASH_OF(array_ptr)) &#123;</span><br><span class="line">                <span class="keyword">return</span> ZEND_ITER_PLAIN_OBJECT;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> ZEND_ITER_INVALID;</span><br><span class="line">        <span class="keyword">case</span> IS_ARRAY:</span><br><span class="line">            <span class="keyword">if</span> (HASH_OF(array_ptr)) &#123;</span><br><span class="line">                <span class="keyword">return</span> ZEND_ITER_PLAIN_ARRAY;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">return</span> ZEND_ITER_INVALID;</span><br><span class="line">        <span class="keyword">default</span>:</span><br><span class="line">            <span class="keyword">return</span> ZEND_ITER_INVALID;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>这就要讲到PHP的内置接口Iterator了，PHP5开始支持了接口， 并且内置了Iterator接口， 所以如果你定义了一个类，并实现了Iterator接口，那么你的这个类对象就是ZEND_ITER_OBJECT,否则就是 ZEND_ITER_PLAIN_OBJECT.</p>
+<p>对于ZEND_ITER_PLAIN_OBJECT的类，foreach会通过HASH_OF获取该对象的默认属性数组，然后对该数组进行foreach.<br>而对于ZEND_ITER_OBJECT的类对象，则会通过调用对象实现的Iterator接口相关函数来进行foreach， 所以， 对于这道笔试题， 可以作出如下的答案：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">sample</span> <span class="keyword">implements</span> <span class="title">Iterator</span></span><br><span class="line"></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="variable">$_items </span>= <span class="keyword">array</span>(<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>,<span class="number">4</span>,<span class="number">5</span>,<span class="number">6</span>,<span class="number">7</span>);</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">__construct</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                  ;<span class="comment">//void</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">rewind</span><span class="params">()</span> </span>&#123; reset(<span class="variable">$this</span>-&gt;_items); &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">current</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> current(<span class="variable">$this</span>-&gt;_items); &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">key</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> key(<span class="variable">$this</span>-&gt;_items); &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">next</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> next(<span class="variable">$this</span>-&gt;_items); &#125;</span><br><span class="line">    <span class="keyword">public</span> <span class="function"><span class="keyword">function</span> <span class="title">valid</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> ( <span class="variable">$this</span>-&gt;current() !== <span class="keyword">false</span> ); &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$sa </span>= <span class="keyword">new</span> sample();</span><br><span class="line"><span class="keyword">foreach</span>(<span class="variable">$sa as </span><span class="variable">$key </span>=&gt; <span class="variable">$val</span>)&#123;</span><br><span class="line">    <span class="keyword">print</span> <span class="variable">$key </span>. <span class="string">"=&gt;"</span> .<span class="variable">$val</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>转载：<a href="http://www.laruence.com/2008/10/31/574.html" target="_blank" rel="external">http://www.laruence.com/2008/10/31/574.html</a></p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/转载/">转载</a></li></ul>
+	</div>
+
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+    
+  </div>
+  
+</article>
+
+
+
+
+
+
+
+  
+    <article id="post-2013-10-apache-rewrite-403" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2013/10/22/2013-10-apache-rewrite-403/" class="article-date">
+  	<time datetime="2013-10-21T16:24:00.000Z" itemprop="datePublished">2013-10-22</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2013/10/22/2013-10-apache-rewrite-403/">apache rewriteEngine开启后出现403</a>
+    </h1>
+  
+
+      </header>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>apache伪静态URL配置RewriteEngine on出现403错误</p>
+<p>解决方案：<br>1.在apache配置文件httpd.conf中，修改两项配置: Options FollowSymLinks、AllowOverride All。<br>2.把Options Indexes注释掉，也就是前面加个“#”，变成#Options Indexes</p>
+
+      
+    </div>
+    
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原创/">原创</a></li></ul>
+	</div>
+
+      
 
       
       <div class="clearfix"></div>
@@ -572,12 +988,16 @@
 
   
   
+    <nav id="page-nav">
+      <span class="page-number current">1</span><a class="page-number" href="/tags/PHP/page/2/">2</a><a class="extend next" rel="next" href="/tags/PHP/page/2/">Next &raquo;</a>
+    </nav>
+  
 </div>
       <footer id="footer">
   <div class="outer">
     <div id="footer-info">
     	<div class="footer-left">
-    		&copy; 2015 juice
+    		&copy; 2017 juice
     	</div>
       	<div class="footer-right">
       		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
@@ -598,8 +1018,8 @@
 		isHome: false,
 		isPost: false,
 		isArchive: false,
-		isTag: false,
-		isCategory: true,
+		isTag: true,
+		isCategory: false,
 		open_in_new: undefined
 	}
 </script>

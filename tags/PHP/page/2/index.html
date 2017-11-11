@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   
-  <title>Archives: 2013/8 | juice 的博客</title>
+  <title>Tag: PHP | juice 的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="description" content="blog.zhuxi.me">
 <meta property="og:type" content="website">
 <meta property="og:title" content="juice 的博客">
-<meta property="og:url" content="http://blog.zhuxi.me/archives/2013/08/index.html">
+<meta property="og:url" content="http://blog.zhuxi.me/tags/PHP/page/2/index.html">
 <meta property="og:site_name" content="juice 的博客">
 <meta property="og:description" content="blog.zhuxi.me">
 <meta name="twitter:card" content="summary">
@@ -190,11 +190,11 @@
 </nav>
       <div class="body-wrap">
   
-    <article id="post-2013-08-parse_str&amp;http_build_query" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2013-09-curl-400-bad-request" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2013/08/29/2013-08-parse_str&http_build_query/" class="article-date">
-  	<time datetime="2013-08-29T04:03:00.000Z" itemprop="datePublished">2013-08-29</time>
+      <a href="/2013/09/09/2013-09-curl-400-bad-request/" class="article-date">
+  	<time datetime="2013-09-09T09:30:00.000Z" itemprop="datePublished">2013-09-09</time>
 </a>
     </div>
   
@@ -207,7 +207,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2013/08/29/2013-08-parse_str&http_build_query/">URL处理的两个关键PHP函数parse_str与http_build_query</a>
+      <a class="article-title" href="/2013/09/09/2013-09-curl-400-bad-request/">php curl请求返回400 Bad Request的解决方法</a>
     </h1>
   
 
@@ -216,14 +216,10 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>简单的理解这两个函数</p>
-<p>parse_str就是将一个url ?后面的参数转换成一个数组</p>
-<p>array parse_str(url,arr)</p>
-<p>http_build_query就是将一个数组转换成url ?后面的参数字符串，会自动进行urlencode处理</p>
-<p>string http_build_query ( array formdata [, string numeric_prefix])</p>
-<p>后面的给数组中没有指定键或者键为数字的加下标</p>
-<p>我们知道, PHP的 parse_str() 函数可以将 URL Query 格式的字符串解析成关联数组, 与PHP生成 $_GET 使用的相同的策略. parse_str() 的”反函数”是 http_build_query(), 它将关联数组和对象生成 URL Query 字符串. 不过, 只在PHP5之后才被支持. 所以, 我们需要编写自己的 http_build_query()</p>
-<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">my_http_build_query</span><span class="params">(<span class="variable">$data</span>)</span> </span>&#123;</span><br><span class="line">    <span class="variable">$str</span> = <span class="string">''</span>;</span><br><span class="line">    <span class="keyword">foreach</span>(<span class="variable">$data</span> <span class="keyword">as</span> <span class="variable">$key</span> = &gt;<span class="variable">$value</span>) &#123;</span><br><span class="line">        <span class="keyword">foreach</span>(child_str(<span class="variable">$value</span>) <span class="keyword">as</span> <span class="variable">$v</span>) &#123;</span><br><span class="line">            <span class="variable">$str</span>. = <span class="string">"$key$v&amp;"</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> substr(<span class="variable">$str</span>, <span class="number">0</span>, strlen(<span class="variable">$str</span>) - <span class="number">1</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">child_str</span><span class="params">(<span class="variable">$data</span>)</span> </span>&#123;</span><br><span class="line">    <span class="variable">$str</span> = <span class="keyword">array</span>();</span><br><span class="line">    <span class="keyword">if</span> (is_array(<span class="variable">$data</span>)) &#123;</span><br><span class="line">        <span class="keyword">foreach</span>(<span class="variable">$data</span> <span class="keyword">as</span> <span class="variable">$key</span> = &gt;<span class="variable">$value</span>) &#123;</span><br><span class="line">            <span class="keyword">foreach</span>(child_str(<span class="variable">$value</span>) <span class="keyword">as</span> <span class="variable">$v</span>) &#123;</span><br><span class="line">                <span class="variable">$str</span>[] = <span class="string">"[$key]$v"</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">// do url encoding here</span></span><br><span class="line">        <span class="variable">$data</span> = str_replace(<span class="string">'&amp;'</span>, <span class="string">'%26'</span>, <span class="string">'='</span>.<span class="variable">$data</span>);</span><br><span class="line">        <span class="variable">$str</span>[] = <span class="variable">$data</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$str</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+        <figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&amp;nbsp;</span><br><span class="line"><span class="tag">&lt;<span class="title">h1</span>&gt;</span>400 Bad Request<span class="tag">&lt;/<span class="title">h1</span>&gt;</span></span><br><span class="line">&amp;nbsp;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="title">center</span>&gt;</span>nginx/1.2.0<span class="tag">&lt;/<span class="title">center</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>当你使用php的curl方法时会返回400 Bad Request，这有如下几种原因：</p>
+<p>1.远端有检测客户端过滤行为。<br>2.远端有redir行为。<br>3.请求中间层。<br>4.近端有过滤行为。<br>5.某个过程有缓存机制。<br>6.脚本文件编码问题。</p>
+<p>前面5种都是服务器的限制，做一些伪装就可以，但是很多人会忽略掉第六个原因，这是因为Unicode、Unicode big endian和UTF-8编码的txt文件的开头会多出几个字节，分别是FF、FE（Unicode）,FE、FF（Unicode big endian）,EF、BB、BF（UTF-8）。一般只要换成UTF-8编码就没有可以解决了。</p>
 
       
     </div>
@@ -231,6 +227,10 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/原创/">原创</a></li></ul>
+	</div>
+
       
 
       
@@ -248,11 +248,11 @@
 
 
   
-    <article id="post-2013-08-php-oauth2-access_token" class="article article-type-post" itemscope itemprop="blogPost">
+    <article id="post-2013-09-hijack-browser" class="article article-type-post" itemscope itemprop="blogPost">
   
     <div class="article-meta">
-      <a href="/2013/08/25/2013-08-php-oauth2-access_token/" class="article-date">
-  	<time datetime="2013-08-25T08:18:00.000Z" itemprop="datePublished">2013-08-25</time>
+      <a href="/2013/09/05/2013-09-hijack-browser/" class="article-date">
+  	<time datetime="2013-09-04T16:09:00.000Z" itemprop="datePublished">2013-09-05</time>
 </a>
     </div>
   
@@ -265,7 +265,7 @@
         
   
     <h1 itemprop="name">
-      <a class="article-title" href="/2013/08/25/2013-08-php-oauth2-access_token/">php 模拟新浪微博oauth2.0授权获取access_token （跳过授权页）（改）</a>
+      <a class="article-title" href="/2013/09/05/2013-09-hijack-browser/">看我如何劫持用户的浏览器</a>
     </h1>
   
 
@@ -274,8 +274,16 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="preprocessor">&lt;?</span></span><br><span class="line">session_start();</span><br><span class="line"><span class="keyword">require_once</span> <span class="string">'sina/saetv2.ex.class.php'</span>;</span><br><span class="line"><span class="variable">$o</span> = <span class="keyword">new</span> SaeTOAuthV2 ( WB_AKEY, WB_SKEY);</span><br><span class="line"><span class="variable">$oauth_url</span> = <span class="variable">$o</span>-&gt;getAuthorizeURL (WB_CALLBACK_URL);</span><br><span class="line"><span class="comment">/*</span><br><span class="line">* 要提交的数据</span><br><span class="line">*</span><br><span class="line">*/</span></span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'client_id'</span>] = WB_AKEY;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'response_type'</span>] = <span class="string">'code'</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'redirect_uri'</span>] = urlencode(WB_CALLBACK_URL);</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'action'</span>] = <span class="string">'submit'</span>;</span><br><span class="line"><span class="comment">//$postdata ['userId'] = '用户名';//如果选择cookies登录可不填用户名和密码</span></span><br><span class="line"><span class="comment">//$postdata ['passwd'] = '密码';</span></span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'isLoginSina'</span>] = <span class="number">0</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'from'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'regCallback'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'state'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'ticket'</span>] = <span class="string">''</span>;</span><br><span class="line"><span class="variable">$postdata</span> [<span class="string">'withOfficalFlag'</span>] = <span class="number">0</span>;</span><br><span class="line"><span class="comment">//把提交的数据拼接字符串</span></span><br><span class="line"><span class="variable">$postdata_str</span> = <span class="string">''</span>;</span><br><span class="line"><span class="keyword">foreach</span> ( <span class="variable">$postdata</span> <span class="keyword">as</span> <span class="variable">$dk</span> =&gt; <span class="variable">$dv</span> ) &#123;</span><br><span class="line"><span class="variable">$postdata_str</span> .= <span class="variable">$dk</span> . <span class="string">'='</span> . (<span class="variable">$dv</span>) . <span class="string">"&amp;"</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="variable">$postdata_str</span> = trim ( <span class="variable">$postdata_str</span>, <span class="string">'&amp;'</span> );</span><br><span class="line"><span class="variable">$ch</span> = curl_init ();</span><br><span class="line"><span class="variable">$user_agent</span> = <span class="string">'Mozilla/5.0 (Windows; U;</span><br><span class="line">Windows NT 5.1; ru; rv:1.8.0.9) Gecko/20061206 Firefox/1.5.0.9'</span>;</span><br><span class="line"><span class="variable">$cookie_file</span>=tempnam(<span class="string">'temp'</span>,<span class="string">'cookie'</span>);</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_URL, <span class="string">"https://api.weibo.com/oauth2/authorize"</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_SSL_VERIFYPEER, <span class="number">0</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_SSL_VERIFYHOST, <span class="number">0</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_RETURNTRANSFER, <span class="number">1</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_FOLLOWLOCATION, <span class="number">1</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_REFERER, <span class="variable">$oauth_url</span> );</span><br><span class="line"><span class="comment">//curl_setopt ( $ch, CURLOPT_USERAGENT, $user_agent );</span></span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_POST, <span class="keyword">true</span> );</span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_POSTFIELDS, <span class="variable">$postdata_str</span> );</span><br><span class="line"><span class="comment">//使用cookie传值</span></span><br><span class="line">curl_setopt ( <span class="variable">$ch</span>, CURLOPT_COOKIE,<span class="string">'*******'</span>);<span class="comment">//*******填写你的cookies，如果选择用户名和密码登录则可以忽略</span></span><br><span class="line">curl_setopt(<span class="variable">$ch</span>,CURLOPT_COOKIEJAR,<span class="variable">$cookie_file</span>);</span><br><span class="line"><span class="variable">$response</span> = curl_exec(<span class="variable">$ch</span>);</span><br><span class="line"><span class="variable">$last_url</span> = curl_getinfo ( <span class="variable">$ch</span>, CURLINFO_EFFECTIVE_URL );</span><br><span class="line"><span class="comment">//$response = str_replace('/oauth2/','https://api.weibo.com/oauth2/',$response);</span></span><br><span class="line"><span class="comment">//print_r($response);</span></span><br><span class="line">print_r(<span class="variable">$_REQUEST</span>);</span><br></pre></td></tr></table></figure>
-<p>我们可以再输出中看到返回的access_token、uid等数据，并且查看该微博已经授权appkey对应的应用。这段代码其实没有什么很大作用，因为还不能自动授权，不过还可以制作自己的微博授权登录界面。如有问题可留言给我，记得留下你的邮箱方便回复。<br>本文参考<a href="http://hi.baidu.com/bing008ok/item/0a2bce068d1f8e0aeafe385d" target="_blank" rel="external">http://hi.baidu.com/bing008ok/item/0a2bce068d1f8e0aeafe385d</a></p>
+        <p>标题起的有点大有点夸张，但应该引起重视，起因是我在搜索一个东西的时候，打开了一个垃圾站点，神奇的事情发生了，新标签打开这个站点后，我的Google搜索页面自动跳转到广告页面了，出于好奇必须研究一下，首先它控制了我的Google搜索页面，所以我猜测它代码里有“Google”这个关键词，在Chrome控制台用强大的ctrl+shift+f搜到了几个js文件，前面都是Google广告的js，最后一个js.js是咸鱼饭，于是在这个文件里找到可疑的被加密的代码位置下了个断点。</p>
+<p><img src="http://i.wanz.im/wp-content/uploads/2013/07/evilcodes.png" alt="p1"></p>
+<p>经过耐心一直按F11跟踪后，控制台VM输出了解密后的关键函数。<br><img src="http://i.wanz.im/wp-content/uploads/2013/07/decoded-evil-codes.png" alt="p2"></p>
+<p>看到这里基本上就知道了垃圾站劫持搜索页面的方法了，代码很简单有点基础的同学应该都可以看懂，这时我的想法是这么简单，我怎么没想到，思路很重要，到这里代码分析及实现原理就这样完了，简单到没什么可以讲的了。</p>
+<p>垃圾站用这样的方式来刷流量刷广告很正常，但是我想到的是更可怕的事情，被访问页面可以劫持用户的来源页面，也就产生了一个钓鱼攻击的利用场景：</p>
+<p>1，用户A在微博看到一个链接好奇打开了；<br>2，被打开的页面evilA用一些吸引眼球的内容抓住用户的注意力；<br>3，微博页面被劫持跳转到钓鱼页面，例如一个假的高仿的微博页面evilB；<br>4，当用户关闭页面evilA，打算继续看微博的时候，此时他看到的是高仿的微博页面evilB，而用户没留意到页面已经被替换；<br>5，高仿的微博页面evilB提示登录超时，要求用户重新登录，用户输入帐号密码；<br>6，高仿的微博页面evilB记录用户密码后再跳回正常的微博页面，用户帐号在不知不觉中被盗；</p>
+<p>测试页面：<a href="http://wanz.im/demo/referrer-hijacking.html" target="_blank" rel="external">http://wanz.im/demo/referrer-hijacking.html</a></p>
+<p>Chrome 28.0.1500.72 m，Firefox 22.0成功劫持，IE 10.0.9200.16635提示没有权限</p>
+<p>当然上述是理想状态下的钓鱼攻击，高端点的利用就是程序通过referrer信息立刻生成一个相同的页面来钓鱼，不注意防范依然有风险存在，上网需谨慎！</p>
+<p>转载自：<a href="http://i.wanz.im/2013/07/19/hijacking-referrer-page/" target="_blank" rel="external">http://i.wanz.im/2013/07/19/hijacking-referrer-page/</a></p>
 
       
     </div>
@@ -283,6 +291,10 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/PHP/">PHP</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/转载/">转载</a></li></ul>
+	</div>
+
       
 
       
@@ -375,58 +387,10 @@
 
 
   
-    <article id="post-2013-08-first-day" class="article article-type-post" itemscope itemprop="blogPost">
   
-    <div class="article-meta">
-      <a href="/2013/08/25/2013-08-first-day/" class="article-date">
-  	<time datetime="2013-08-25T04:00:00.000Z" itemprop="datePublished">2013-08-25</time>
-</a>
-    </div>
-  
-  <div class="article-inner">
-    
-      <input type="hidden" class="isFancy" />
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2013/08/25/2013-08-first-day/">第一天</a>
-    </h1>
-  
-
-      </header>
-      
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>2013年08月25日。第一天写博客，主要是想在这里与大家分享个人工作心得和经验，以及分享一些比较有趣的东西。本人能力有限，如对博文有何建议或者错误请您谅解并留下您的脚印。谢谢！</p>
-<p>Juice<br>2013年08月25日</p>
-
-      
-    </div>
-    
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-    
-  </div>
-  
-</article>
-
-
-
-
-
-
-
-  
+    <nav id="page-nav">
+      <a class="extend prev" rel="prev" href="/tags/PHP/">&laquo; Prev</a><a class="page-number" href="/tags/PHP/">1</a><span class="page-number current">2</span>
+    </nav>
   
 </div>
       <footer id="footer">
@@ -453,8 +417,8 @@
 		animate: undefined,
 		isHome: false,
 		isPost: false,
-		isArchive: true,
-		isTag: false,
+		isArchive: false,
+		isTag: true,
 		isCategory: false,
 		open_in_new: undefined
 	}
